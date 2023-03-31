@@ -1,0 +1,2734 @@
+\documentclass[12pt]{article}
+
+\usepackage[
+    top=5mm,
+    bottom=5mm,
+    left=5mm,
+    right=5mm,
+    marginparwidth=0mm,
+    marginparsep=0mm,
+    headheight=15pt,
+    centering,
+    includefoot,
+    includehead
+]{geometry}
+\usepackage{multicol}
+\usepackage{tabularx}
+\usepackage{circuitikz}
+
+% preamble
+\input{preamble}
+
+\newcommand{\Mod}[1]{\ (\mathrm{mod}\ #1)}
+\def\opt{\text{opt}}
+
+\begin{document}
+
+  \begin{center}
+    {\bf CMSC451 - Algorithms}
+  \end{center}
+
+  \vspace{0.7cm}
+
+  \tableofcontents
+
+
+
+  \newpage
+
+  \section{Asymptotic Notation}
+
+  \qna{
+    What does it mean for an algorithms to be efficient?
+  }
+  {
+    It's polynomial in the input size
+  }
+
+  \note {
+    We say that $g(n)$ is {\bf in} $\Omega(n), \O(n),$ etc... Not that $g(n)$ {\bf
+    equals} $\Omega(n), \O(n),$ etc...
+  }
+
+  \subsection{Big $\O$ Notation}
+  {\it Asymptotic upper bound}.
+
+  We say that
+
+  \[
+    f(n) \in \O(g(n))
+  \]
+
+  If $\exists C > 0, \exists n_0 \ge 1 \text{ such that } \forall n \ge n_0$
+
+  \[
+    f(n) \le Cg(n)
+  \]
+
+  Eventually, $f$ is below a constant multiple of $g$. Big $\O(g(n))$ represents
+  an asymptotic {\it upper bound} of $f(n)$.
+
+
+
+
+  \subsection{Little $o$ Notation}
+
+  \[
+    f(n) \in o(g(n))
+  \]
+
+  If $\lim_{n \to \infty} \frac{f(n)}{g(n)} = 0$. Meaning that $f$ grows
+  {\bf slower} than $g$.
+
+
+  \example {
+    If $f(n) = 10n^2$, then $f(n) \in o(n^3)$ because $\lim_{n \to \infty}
+    \frac{10n^2}{n^3} = 0$.
+
+    Also, note that $f(n) \in \O(n^2)$, if we let $C = 11$, then asymptotically,
+    $10n^2 < 11n^2$. {\bf However}, $f(n) \not\in o(n^2)$, since $\lim_{n \to \infty}
+    \frac{10n^2}{n^2} \ne 0$. Moreover, $f(n) \not\in o(Cn^2)$ for any $C \in R$
+    since, for a fixed C, $\lim_{n \to \infty} \frac{10n^2}{Cn^2} = \frac{10}{C}
+    \ne 0$.
+  }
+
+
+  \note {
+    If $f(n) \in o(n)$, then $f(n) \in O(n)$
+  }
+  
+
+
+  \subsection{Big $\Omega$ Notation}
+  {\it Asymptotic lower bound}.
+
+  \[
+    f(n) \in \Omega(g(n))
+  \]
+
+  If $\exists B > 0, \exists n_0 \ge 1$ such that $\forall n \ge n_0$
+
+  \[
+    f(n) \ge Bg(n)
+  \]
+
+  Eventually, $f$ is above a constant multiple of $g$. This represents an
+  asymptotic {\it lower bound}.
+
+  \example {
+    For example, we have
+    $g(n) = 10n^2 \in \Omega(n^2)$.
+  }
+
+
+
+
+  \subsection{Little $\omega$ Notation}
+
+  \[
+    f(n) \in \omega(g(n))
+  \]
+
+  If $\lim_{n \to \infty} \frac{g(n)}{f(n)} = 0$. Meaning that $f$ grows
+  {\bf faster} than $g$.
+
+
+
+  % \note{
+  %   To figure out if the functions are in those sets, simply compute the limit.
+  % }
+
+
+  \note {
+    If $f(n) \in \omega(n)$, then $f(n) \in \Omega(n)$
+  }
+
+
+
+
+  \subsection{Big $\Theta$ Notation}
+  {\it Asymptotic upper and lower bound}.
+
+  \[
+    f(n) \in \Theta(g(n))
+  \]
+
+  Meaning that $\exists B > 0, C > 0, n_0 \ge 1$ such that $\forall n \ge n_0$
+
+  \[
+    Bg(n) \le f(n) \le Cg(n)
+  \]
+
+  Eventually, $f$ is between two constant multiples of $g$. Here, we bound $f$ by
+  two constant multiples of $g$.
+
+
+  \note {
+    If $f(n) \in \Theta(n)$, then $f(n) \in \O(n)$ and $f(n) \in \Omega(n)$
+  }
+
+
+
+  \note {
+    \begin{itemize}
+      \item $o <$
+      \item $\O \le$
+      \item $\Theta =$
+      \item $\Omega \ge$
+      \item $\omega >$
+    \end{itemize}
+  }
+
+
+
+  \subsection{Running Time Analysis}
+
+  \note{
+    We will be evaluating some recurrence equations in this class.
+  }
+
+  We need to count elementary steps when evaluating our algorithms. For instance
+  the number of times we go through a loop. Inside this loop, we should also
+  consider how expensive one such pass is, as it might not be constant.
+
+  Using the right data structures can impact this a lot.
+
+  \subsubsection{Running Time Classes}
+
+  \begin{itemize}
+    \item $\O(1)$: If we can get it
+    % \item $\O(\alpha(n))$: $\alpha(n)$ is the inverse of the {\bf Ackerman
+    %       function}. This thus grows slower than the $log(n)$. It's almost constant.
+    %       It's below $4$ for all $n \le 10^{600}$. This function shows up in {\it disjoint
+    %       set data structures}. It's essentially as good as $\O(1)$.
+
+    \item $\O(\log^{k}(n))$: This is a good target for a data structure. Shows up in binary
+          search.
+
+    \item $\O(n^{1 / k})$ for $k \in \{1, 2, \dots\}$
+
+    \item $\O(n^k)$: Not great but not bad. Occurs in lists a lot
+
+    \item $\O(n\log(n))$: A good sorting algorithm. (Merge, Quick, ...) It's a lower
+          bound on {\it comparison based} sorting algorithm.
+
+    \item $\O(n^2)$: For some things, this isn't bad but it's not great either.
+
+    \item $\O(n^k)$ for $k \ge 2$: Slow. Fine for small data. This can happen in
+          searches of smaller subsets.
+
+          \[
+            \binom{n}{k} = \frac{n!}{k!(n - k)!} \in \Theta(n^k)
+          \]
+
+    \item $\O(2^n)$: Terrible, but sometimes it's all you get. Determining if a boolean
+          expression is satisfiable. Checking all subsets.
+
+    \item $\O(n!)$: Bad.
+  \end{itemize}
+
+
+  \newpage
+
+  \section{Graphs}
+
+
+  \Definition {Undirected Graph} {
+    An {\bf Undirected Graph} $G = (V, E)$ is a finite set of vertices $V$ and edges $E$,
+    which are {\bf unordered} pairs of vertices, where for some edge $e \in E$, $e
+    = \{v_1, v_2\}$ is an edge connecting vertex $v_1$ and vertex $v_2$.
+  }
+
+  \note {
+    {\it Vertices} are sometimes called {\it Nodes}.
+  }
+
+
+  \Definition {Directed Graph} {
+    A {\bf Directed Graph}, {\it also known as a Digraph}, $G = (V, E)$ is a
+    finite set of vertices $V$ and edges $E$, which are {\bf ordered} pairs of
+    vertices, where for some edge $e \in E$, $e = (v_1, v_2)$ is an edge pointing
+    from vertex $v_1$ to vertex $v_2$.
+  }
+
+  \note {
+    An edge $e = \{u, v\} \in E$ is {\it uniquely} defined by vertices $u,
+    v \in V$. You {\bf cannot} have two edges going from the same starting
+    vertex to the same destination vertex in a Graph.
+
+    However in a Digraph, you {\bf can} have both $e = (u, v)$ and $e' = (v, u)$,
+    where $e$ goes from $u$ to $v$, and $e'$ goes from $v$ to $u$.
+  }
+
+  \Definition {Adjacence and Incidence} {
+    For some Graph $G$ with some edge $e = \{v_1, v_2\}$, we say that $v_1$ and
+    $v_2$ are {\bf adjacent}, and $e$ is {\bf incident} on the vertices.
+  }
+
+  \Definition {Subgraph} {
+    A {\bf Subgraph} of $G = (V, E)$ is a graph $G' = (V', E')$ with $V' \subseteq
+    V$ and $E' \subseteq E$ where, for any edge $e = \{v_1, v_2\} \in E'$, $v_1, v_2
+    \in V'$.
+
+    \btw{
+      $G'$ is a subgraph of $G$ if all of its edges and vertices are in $G$. It
+      can be connected to the rest of $G$, or not.
+    }
+  }
+
+  \Definition {Head and Tail} {
+    For some Digraph $G$ with some edge $e = (v_1, v_2)$, we say that $e$ has
+    {\bf tail} $v_1$ and {\bf head} $v_2$.
+  }
+
+  \Definition {Degree} {
+      The {\bf degree} of a vertex $\deg(v)$ is its number of {\it incident}
+      edges.
+
+      \bigskip
+
+      The {\bf in degree} of a vertex $\indeg(v)$ is its number of edges with
+      $v$ as the head.
+
+      \btw {
+        This is the number of edges pointing {\it into} $v$.
+      }
+
+      \bigskip
+
+      The {\bf out degree} of a vertex $\outdeg(v)$ is its number of edges with
+      $v$ as the tail.
+
+      \btw {
+        This is the number of edges pointing {\it out of} $v$.
+      }
+  }
+
+  For some undirected graph $G = (V, E)$, we commonly define $n = |V|$, and $m =
+  |E|$. Then we have the following identities
+
+  \[
+    \sum_{v \in V} \deg(v) = 2m
+  \]
+
+  \btw {
+    For all vertices, the sum of all degrees is twice the number of edges.
+    This should make sense, as edges are attached to two vertices.
+  }
+
+  For a Digraph, we have that
+
+  \[
+    \sum_{v \in V} \indeg(v) = \sum_{v \in V} \outdeg(v) = m
+  \]
+
+  \btw {
+    Since the graph is directed, each edge has a start and end, so it
+    should make sense that the sum of all in degrees should match the sum
+    of all out degrees, which is the number of edges.
+  }
+
+  % \note {
+  %   \begin{itemize}
+  %     \item Digraphs can have self loops, undirected graphs cannot. \QUESTION
+  %       What does this mean?
+  %
+  %   \end{itemize}
+  % }
+
+
+
+  \subsection{Representations}
+
+  \subsubsection{Adjacency Matrix}
+
+  Represented by a $|V| \times |V|$ matrix indexed by vertices, with
+
+  \[
+    a_{i,j} = \begin{cases}
+      1 \text{ if } $(i, j)$ \in E \\
+      0 \text{ otherwise}
+    \end{cases}
+  \]
+
+  \note{
+    This has size $\Theta(n^2)$
+  }
+
+
+
+  \subsubsection{Adjacency List}
+
+  Represented by a list of vertices $v$ where, for each $v \in V$, we are given a
+  list of all its neighbors. Usually, this list is composed only of {\it outgoing}
+  neighbors from $v$.
+
+  \note{
+    This has size $\Theta(n + m)$
+  }
+
+  \subsection{Paths \& Cycles}
+
+  \Definition {Path} {
+    A {\bf Path} is a sequence of vertices $(v_0, v_1, ..., v_k)$ such that $(v_i,
+    v_{i + 1}) \in E$ for all $i \in \{0, ..., k - 1\}$.
+
+    The length of a path is its number of edges, $k$
+  }
+
+  \Definition {Simple Path} {
+    A path is {\bf Simple} if all its vertices and edges are distinct
+  }
+
+  \Definition {Cycle} {
+    A {\bf Cycle} is a path with $v_0 = v_k$ and all other vertices distinct, with
+    $k \ge 3$.
+
+    Do note that, for a {\it Digraph}, two vertices connected by edges {\it can}
+    form a cycle. In which case, $k \ge 2$. Additionally, it's important that the
+    edge is in the right direction for it to count as a cycle.
+  }
+
+  \Definition {Distance} {
+    The {\bf Distance} between two vertices $u$ and $v$ is the length of {\it a
+    shortest path} between them.
+  }
+
+  \subsection{Connectivity}
+
+  {\it Can you get from one vertex to another at all?}
+
+  \Definition {Component} {
+    A {\bf Component} is a set of vertices such that for all pairs of vertices in
+    the set, there is a path between them. No superset of vertices has this
+    property.
+
+    \note{
+      A single vertex is still a component.
+    }
+
+    A component is really represented only by its vertices.
+  }
+
+  \Definition {Connected Graph} {
+    We say that an undirected graph is {\bf Connected} if, for all $u, v \in V$,
+    there exists a path from $u$ to $v$.
+
+    \note{
+      The path does not need to be direct.
+    }
+  }
+
+  \Definition {Strongly Connected} {
+    A Digraph is {\bf Strongly Connected} if you can get from any vertex to any
+    other vertex. For all $u, v \in V$ there exists a path from $u$ to $v$ and
+    from $v$ to $u$.
+
+    \note{
+      The path does not need to be direct.
+    }
+  }
+
+  \Definition {Strongly Connected Component} {
+    A {\bf Strongly Connected Component} of a Digraph is a maximal set of vertices
+    for which the induced subgraph is strongly connected.
+  }
+
+  \note{
+    Components partition a graph, and the union of the partitions always produce
+    the whole graph.
+  }
+
+  \subsection{Edge Bounds}
+
+  Let's look at various types of graphs and how many edges they can have.
+  
+  \begin{multicols}{2}
+    \subsubsection{Undirected Graphs}
+
+    {\bf With self loops}
+    \[
+      0 \le m \le n + \binom{n}{2}
+    \]
+
+    {\bf Without self loops}
+    \[
+      0 \le m \le \binom{n}{2}
+    \]
+
+    \subsubsection{Directed Graphs}
+
+    {\bf Self loops}
+    \[
+      0 \le m \le n + 2\binom{n}{2}
+    \]
+
+    {\bf Without self loops}
+    \[
+      0 \le m \le 2\binom{n}{2}
+    \]
+  \end{multicols}
+
+
+
+
+  \subsection{Breadth First Search}
+
+  Breadth First Search splits the graph into layers $L_j$. $L_0$ is the starting
+  vertex. $L_{j + 1}$ is the set of vertices in $L_j$ which are not already
+  neighbors of $L_0 \cup \cdots \cup L_{j - 1}$.
+
+  \Lemma{
+    A vertex in $L_j$ has distance $j$ from $s$, the starting vertex.
+  }
+  {
+    By induction on $j$. Base $j = 0$, $L_0 := \{s\}$ is the set of vertices
+    with distance $0$. If $L_0, ..., L_j$ satisfy the lemma, then the vertices
+    in $L_{j + 1}$ must have distance at least $j + 1$ from $s$ (otherwise they
+    would be in $L_0, ..., L_j$ instead), but there exists a path of length $j +
+    1$ to all vertices in $L_{j + 1}$ since they are adjacent to vertices in
+    $L_j$. Vertices in $L_{j + 1}$ therefore satistfy the claim so the claim
+    follows for all $j$ by induction.
+  }
+
+  \subsubsection{Pseudocode}
+
+  For a graph $G$, starting vertex $s$, and a function $f$, we have
+
+  \begin{lstlisting}[]
+BreadthFirstSearch($G$, $s$, $f$):
+  # initialize a stack with the starting vertex
+  queue = [$s$]
+  visited = $\emptyset$
+
+  while stack is not empty
+    $v$ = pop(stack)
+
+    # perform action on $v$
+    $f(v)$
+
+    for all neighbors $u$ of $v$:
+      if $u \not\in$ visited:
+        push $u$ to queue
+        add $u$ to visited
+      end
+    end
+  end
+end
+  \end{lstlisting}
+
+  \subsubsection{Time Complexity}
+
+  Loop over all vertices $v \in V$, for each, do $\O(\deg(u) + 1)$ operations.
+  Total asymptotic running time is
+
+  \[
+    \O(\sum_{v \in V} (\deg(n) + 1)) = \O(2\deg(n) + n) = \O(2m + n) \in \O(m + n)
+  \]
+
+  for $n = |V|, m = |E|$.
+
+  \subsubsection{Algorithmic Connectivity}
+
+  To understand connectivity in a graph, we construct a {\bf spanning tree}.
+
+  \Definition {Spanning Tree} {
+    A {\bf Spanning Tree} is a subgraph that includes all the vertices of the
+    graph, and is a tree.
+  }
+
+  We specify such tree by giving the parent $\pr[v]$ of every vertex $v$
+  with $\pr[\text{root}] = \emptyset$.
+
+  Generic Algorithm for constructing a spanning tree for the component rooted at
+  $S$.
+
+  \begin{lstlisting}[]
+Let $T$ be the graph with one vertex, s, with $\pr[s] = \emptyset$.
+
+While there is an edge $\{u, v\}$ joining a vertex $u$ of $T$ with a vertex $v$
+not in $T$.
+
+  Add vertex $v$ and edge $\{u, v\}$ to $T$
+  Set $\pr[v] = u$
+  \end{lstlisting}
+
+  {\bf Claim}: The resulting graph is always a tree.
+
+  \Lemma {
+    This tree spans the component containing $s$.
+  }
+  {
+    Any vertex in this tree has a path to $s$: repeatedly take parents until
+    they lead to $s$. There is a path between any two vertices $u$ and $v$ in
+    the tree: consider paths from $u$ to $s$ and $v$ to $s$: join them to get a
+    path from $u$ to $v$. On the other hand, if $u$ is not in $T$, then there is
+    no path from $u$ to $s$. If there were, would could follow the path and find
+    an edge from a vertex not in $T$ to a vertex in $T$. But no such edge can
+    remain when the algorithm terminates.
+  }
+
+  \subsubsection{Bipartiteness}
+
+  {\it This is an algorithmic application of BFS.}
+
+  {\bf Question}. In the search tree of the graph, which edges don't show up in
+  the original graph?
+
+  \note {
+    The only non-tree edges that we could possibly have are between vertices of
+    the same layer, or adjacent layers. After all if it were not, the vertex
+    would be higher in the search tree.
+  }
+
+
+  \Lemma {
+    Let $T$ be a BFS tree. and let $u$ and $v$ be vertices of $T$ with $u$ in
+    layer $L_i$ and $v$ in layer $L_j$. Suppose that $\{u, v\}$ is an edge of
+    graph $G$. Then $|i - j| \le 1$.
+  }
+  {
+    Suppose WLOG that $u$ is added before $v$. Consider the two following cases,
+
+    \begin{enumerate}
+      \item $v$ is already in the tree when $u$ becomes active (i.e. you are looking
+        at its neighbors).
+
+        Then $\{u, v\}$ is a non-tree edge, and $pr[v]$ (the parent of $v$) must
+        have joined the tree before $u$, s $j = \text{layer}(pr[v]) + 1 \le i + 1$.
+
+      \item $v$ is not in the tree when $u$ becomes active.
+
+        Then $\{u, v\}$ is a tree edge and $j = i + 1$.
+    \end{enumerate}
+
+    This is a nice property of BFS, and it's useful to tell if a graph is {\bf
+    bipartite}.
+  }
+
+  \Definition {Bipartiteness} {
+    We say that a Graph $G = (V, E)$ is {\bf Bipartite} if there is a partition
+    $(A, B)$ of $V = A \cup B$ with $A \cap B = \emptyset$, such that for all
+    edges $\{u, v\} \in E$, either $u \in A$ and $v \in B$ or $v \in B$ and $v \in A$.
+
+    \btw {
+      One way to think of bipartiteness is to color each vertex. Start with any
+      vertex of the graph and paint it blue, paint all of its neighbors
+      red, then paint each neighbor of {\it those} vertices blue again, etc...
+
+      Do this until the whole graph is painted. If at any point you encounter a
+      colored vertex which you must change the color of, that means that the
+      graph has an odd cycle, and so it isn't bipartite.
+    }
+  }
+
+  \Theorem {
+    A connected graph with BFS tree $T$ is bipartite if and only if there is no
+    non-tree edge joining vertices in the same layer of $T$.
+  }
+  {
+    $(\Leftarrow)$
+
+    Consider the bipartition $A = L_0 \cup L_2 \cup \cdots$, and $B = L_1 \cup
+    L_3 \cup \cdots$.
+
+    This shows that the graph is bipartite since all non-tree edges join
+    vertices whose layers differ by one.
+
+    Also, the tree edges always join vertices in adjacent layers.
+
+    $(\Rightarrow)$
+
+    Suppose that $\{u, v\}$ is a non-tree edge between vertices $u$ and $v$ in
+    the same layer of the BFS tree. Suppose their {\it nearest common ancestor}
+    is $m$ layers higher. Then there is a path from $u$ to $v$ in the BFS search
+    tree, and the length of that path is $2m$ ($m$ on the way up, $m$ on the way
+    down). Adding edge $\{u, v\}$ gives a cycle of length $2m + 1$.
+
+    {\bf Claim}. A cycle of odd length cannot be bipartite.
+
+    {\bf Proof of Claim}. Indexing the adjacent vertices by $1$, $2$, ..., $2n +
+    1$, to be bipartite, the odd vertices will be on one side, and the even
+    vertices will be on the other side. But $1$ and $2m + 1$ are both odd, and
+    connected, so the edge between them joins vertices on the same side.
+  }
+
+  \subsubsection{Connectivity and Directed Graphs}
+
+  {\bf Question}: Given a directed graph $G$, how could we tell if it is
+  connected?
+
+  One approach is to run BFS on every vertex, but the runtime of that would be
+  $\O(n(m + n))$, which (as we'll see) is wasteful.
+
+  \Lemma {
+    If vertices $u$ and $v$ are {\it mutually reachable}, and $v$ and $w$ are
+    mutually reachable, then $u, w$ are mutually reachable. 
+
+    \btw {In other words, reachability is transitive.}
+  }
+  {
+    Go from $u$ to $v$, and then $v$ to $w$. Similarly, go from $w$ to $v$, and
+    $v$ to $u$.
+
+    \[
+      u \to \cdots \to v \to \cdots \to w
+    \]
+  }
+
+  To tell if a graph is {\bf strongly connected}, fix a vertex $s$ and construct
+
+  \begin{itemize}
+    \item BFS starting from $s$
+    \item BFS starting from $s$, reversing the direction of all edges.
+  \end{itemize}
+
+  The graph is strongly connected iff both searches reach the {\it entire graph}.
+
+  \note {
+    A Strongly Connected graph doesn't need to be complete, you just need to be
+    able to get from any vertex to any other, but maybe not directly.
+  }
+
+  This is surprising because to tell if a graph is strongly connected, you only
+  need to run BFS twice!
+
+
+
+
+
+  \subsection{Depth First Search}
+
+  {\bf Main Idea}: Explore the graph in order of increasing distance from $s$.
+
+  Say a vertex is exhausted if it is not adjacent to any vertex outside the tree.
+
+  \subsubsection{Pseudocode}
+
+  For a graph $G$, starting vertex $s$, and a function $f$, we have
+
+  \begin{lstlisting}[]
+DepthFirstSearch($G$, $s$, $f$):
+  # initialize a stack with the starting vertex
+  stack = [$s$]
+  visited = $\emptyset$
+
+  while stack is not empty
+    $v$ = pop(stack)
+
+    # perform action on $v$
+    $f(v)$
+
+    for all neighbors $u$ of $v$:
+      if $u \not\in$ visited:
+        push $u$ to stack
+        add $u$ to visited
+      end
+    end
+  end
+end
+  \end{lstlisting}
+
+  \note {
+    The pseudocode for \texttt{DepthFirstSearch} is almost identical to
+    \texttt{BreadthFirstSearch}, the only difference is the use of a
+    \texttt{stack} data structure where a \texttt{queue} data structure was used
+    for \texttt{BreadthFirstSearch}.
+  }
+
+  % {\bf Example}
+
+  % \TODO Draw graph from class Tue Feb 14 2023
+  %
+  % \begin{center}
+  % \begin{tikzpicture}[node distance={15mm}, thick, main/.style = {draw, circle}] 
+  %     \node[main] (1) {$x_1$};
+  %     \node[main] (2) [right of=1] {$x_2$};
+  %     \node[main] (5) [below right of=2] {$x_5$}; 
+  %     \node[main] (4) [below left of=5] {$x_4$};
+  %     \node[main] (3) [left of=4] {$x_3$}; 
+  %
+  %     \draw (1) -- (2);
+  %     \draw (2) -- (4);
+  %     \draw (1) -- (3);
+  %     \draw (3) -- (4);
+  %     \draw (4) -- (5);
+  %     \draw (2) -- (5);
+  %   \end{tikzpicture}
+  % \end{center}
+  %
+  % \TODO
+  %
+
+
+
+
+  \newpage
+
+  \section{Trees}
+
+  {\it For this section we talk about undirected graphs.}
+
+  \Definition {Forest} {
+    A {\bf Forest} is a graph with no cycles.
+  }
+
+  \Definition {Tree} {
+    A {\bf Tree} is a connected forest.
+  }
+
+  \note {
+    These definitions stem from the fact that graphs can be disconnected.
+  }
+
+  \note {
+    All trees are forests.
+  }
+
+  An $n$ vertex tree has $m = n - 1$, where $n = |V|$, and $m = |E|$.
+
+  \Definition {Parent \& Children Vertices} {
+    If we designate one vertex of a tree as the root, then the unique neighbor of
+    any vertex that is closer to the root is called the {\bf parent}, and the
+    other neighbors are called its {\bf children}.
+  }
+
+  \Definition {Leaf} {
+    A {\bf Leaf} of a tree is a degree-$1$ vertex.
+
+    For a tree, a leaf is at the bottom and has no children.
+  }
+
+  \Definition {Directed Acyclic Graph} {
+    A Digraph with no {\it directed cycles} is called a {\bf Directed Acyclic
+    Graph}, or {\bf DAG}.
+  }
+
+  \note{
+    Any vertex in a tree can be the root!
+  }
+
+
+
+
+  \newpage
+
+  \section{Topological Sorting}
+
+  \Definition {Topological Ordering} {
+    A {\bf Topological Ordering} is an order in which we can perform the
+    operations sequentially so that all required inputs are available when an
+    operation is performed.
+  }
+
+  % \usetikzlibrary {circuits.logic.US}
+  % \begin{tikzpicture}[circuit logic US]
+  %     \matrix[column sep=7mm, row sep=2mm]
+  %     {
+  %       \node (i0) {$A$}; &                            &                            & \\
+  %                         & \node [and gate] (a1) {};  &                            & \\
+  %       \node (i1) {$B$}; &                            & \node [or gate] (o1) {};   & \\
+  %                         &                            &                            & \\
+  %       \node (i2) {$C$}; &                            & \node [or gate] (o2) {};   & \\
+  %                         &                            &                            & \\
+  %       \node (i3) {$D$}; &                            &                            & \\
+  %     };
+  % \end{tikzpicture}
+
+  A typical example of this is {\bf boolean circuits}. You can evaluate any of
+  the first layer, in any order. But you can't start from the end, because the
+  later operations depend on the previous ones.
+
+  \Lemma {
+    If $G$ has a topological ordering, then $G$ is a DAG.
+  }
+  {
+    By contradiction, suppose that $G$ has a topological ordering $v_1, v_2,
+    ..., v_n$, and has a directed cycle $C$.
+
+    Let $v_i$ be the lowest index vertex on $C$. Let $v_j$ be the vertex just
+    before $v_i$ on $C$. Then $(v_j, v_i)$ is an edge with $1 \le i < j \le n$,
+    but we must have $1 \le j < i \le n$ in a topological ordering since $(v_j,
+    v_i)$ is an edge.
+
+    \btw {
+      The idea here is that, we need input $v_j$ to perform input $v_i$
+      (since $j < i$ in the ordering) but we also need $v_i$ to perform $v_j$
+      because the vertices are in a cycle. Therefore nothing can ever be done,
+      and so this is not a topological ordering.
+    }
+  }
+
+  Now we'll show that every DAG has a topological ordering, and how to find it.
+
+  \Lemma {
+    Every DAG has a vertex with indegree $0$.
+  }
+  {
+    {\it By contrapositive}, If every vertex has positive in degree, then there
+    is an directed cycle.
+
+    Start from any vertex. Walk along some edge in the backward direction (possible
+    since the in degree is positive). After at most $n$ steps, we must have visited
+    some vertex twice, so we must have visited some directed cycle.
+  }
+
+  \Lemma {
+    Every DAG has a topological ordering
+  }
+  {
+    {\it By induction}.
+
+    \induction
+    {
+      A 1-vertex graph is a DAG.
+    }
+    {
+      Assume the claim holds for any DAG with at most $n$ vertices.
+    }
+    {
+      Given an $(n + 1)$ vertex DAG, find an in degree $0$ vertex, and delete it
+      (and associated edges).
+    }
+
+    The resulting graph is an $n$ vertex DAG, since deletion can't create a cycle.
+    So the claim follows by induction.
+  }
+
+  \note {
+    The order in which we delete produces a topological ordering.
+  }
+
+  \note {
+    Topological orderings are {\bf not} unique.
+  }
+
+  \subsection {Pseudocode}
+  This code checks if a graph is a DAG. This is done by adding every vertex with
+  out degree $0$ to a set $S$. Then for each member $v$ of $S$, it checks all
+  neighboring vertices $u$ while removing edge $\{v, u\}$. If $u$ then has no
+  edges pointing to it, it is added to $S$ as well. 
+
+  This process is repeated until termination, when $S$ becomes empty. Finally,
+  $G$ is checked and if vertices remain, then we know that $G$ is not a DAG.
+
+  \begin{lstlisting}
+TopoSort($G$):
+  # this set contains all vertices with indegree 0
+  let $S$ be an empty set
+
+  for all vertices $v$:
+    # suppose easy access to this information,
+    # can be done through pre-processing
+    if $v$ has indegree $0$:
+      add $v$ to $S$
+
+    # we keep track of the indegree
+    # of $v$ through count[$v$]
+    set count[$v$] = $\indeg(v)$
+
+  while $S$ is not empty:
+    remove a vertex $v$ from $S$
+    output $v$
+
+    for each vertex $u$ that $v$ points to:
+      remove edge $\{v, u\}$ from $G$
+
+      # since we removed an edge going into $u$
+      decrement count[$u$]
+
+      # if nothing now points to $u$
+      if count[$u$] = 0:
+        add $u$ to $S$
+
+  if $G$ is nonempty:
+    # the graph is not a DAG
+    return error
+  \end{lstlisting}
+
+  \subsubsection{Running Time}
+
+  It takes $\O(n)$ to initialize the graph, and get information about the
+  in degree of each vertex $v$ of $G$.
+
+  Each operation in the \texttt{for} loop then takes time $\O((\outdeg(v)) + 1)$
+  so we get the total runtime
+
+  \[
+    \O(n + \sum_{v \in V} (\outdeg(v) + 1)) = O(n + m + 1) \in \O(n + m)
+  \]
+
+  % \QUESTION Wouldn't $\O(\sum_{v \in V} (\outdeg(v) + 1)))$ be $\O(nm)$ in the
+  % worst case?
+
+
+
+
+
+  \newpage
+
+  \section{Greedy Algorithms}
+
+  \Definition {Greedy Algorithm} {
+    A {\bf Greedy Algorithm} is an algorithm that makes a sequence of small
+    choices, each of which is locally as good as possible. 
+  }
+
+  Greedy algorithms aren't always the best. There might be overall solutions that
+  are better than what a greedy algorithm can give. However for certain well
+  behaved problems, they can be very good.
+
+  Sometimes, depending on what you're greedy about, they can be really good, or
+  not that great.
+
+  \subsection{Making change}
+
+  Suppose that you have the following coin denominations.
+
+  \[
+    c_1, c_2, \dots, c_n
+  \]
+
+  Given a value $v$ find a way to express $v$ using as few coins as possible. You
+  can use multiple coins of the same denomination.
+
+  \subsubsection{Pseudocode}
+
+  \begin{lstlisting}
+Change($v$):
+  if $v = 0$:
+    return
+
+  let $c$ be the largest coin of denomination less than $v$
+
+  add $c$ to the list of coins
+
+  Change(v - c)
+  \end{lstlisting}
+
+  \note {
+    This algorithm doesn't always produce the best solution.
+
+    For instance, consider the coins $1, 3, 4$, and you want to make change for
+    $6$. Then the algorithm would return $4, 1, 1$, even though $3, 3$ would be
+    a better solution.
+  }
+  
+
+  Sometimes, the algorithm {\it is} optimal, for instance consider the same
+  example as above, but make change for $5$ instead.
+
+
+  Consider the example with coins
+
+  \[
+    1, 5, 10, 25, 100
+  \]
+
+  Then, it is always possible to find the optimal solution.
+
+  % {\bf Exercise}: Why?
+  %
+  % {\bf Solution}: (not verified) Every denomination is a multiple of all the
+  % smaller denominations.
+  %
+  % \TODO{} This solution is false. It seems that this problem is really hard.
+  % Here is a clear restatement of the problem ``For which denominations $c_1,
+  % \dots, c_n$ does the greedy algorithm \texttt{Change} always produce the
+  % optimal solution?" Nobody I've asked seems to know.
+
+  \subsection{Shortest Path}
+
+  Recall that BFS finds the shortest paths in unweighted graphs. What if there is
+  a weight $w_{uv}$ for each edge $(u, v) \in E$?
+
+  The length of a path is the sum of the edge weights.
+
+  \note {
+    Suppose that our Graph lives in a {\bf metric space}. Informally, this is to
+    say that you can't get from vertex $u$ to $v$ faster than directly. It's a
+    discrete version of the triangle inequality.
+  }
+
+  \begin{center}
+    \begin{tikzpicture}[node distance={30mm}, thick, main/.style = {draw, circle}]
+      \node[main] (1) {$u$};
+      \node[main] (2) [right of=1] {$v$};
+
+      \node[main] (3) [right of=2] {$u$}; 
+      \node[main] (4) [right of=3] {};
+      \node[main] (5) [right of=4] {};
+      \node[main] (6) [right of=5] {$v$}; 
+
+      \draw (1) -- (2) node[midway, above] {$w_{uv} = 3$};
+
+      \draw (3) -- (4);
+      \draw (4) -- (5);
+      \draw (5) -- (6);
+    \end{tikzpicture}
+  \end{center}
+
+  Let's look at an alternative...
+
+  \subsubsection{Dijkstra's Algorithm}
+
+  Let $G$ be our graph, and $s$ be our starting vertex. Dijkstra's algorithm finds
+  the minimum distance of every node to $s$.
+
+  \begin{lstlisting}
+Dijkstra($G$, $s$):
+  # we break our graph $G$ up into its
+  # edge set $E$ and vertex set $V$
+  let $E$, $V$ = $G$
+
+  # d[$v$] represents the distance of vertex $v$
+  # from $s$, so the distance from $s$ to $s$ is 0
+  let $d[s]$ = 0
+
+  # this is the parent of $s$
+  let $\pr[s] = \emptyset$
+
+  # we initialize all vertices that aren't $s$ as
+  # being infinitely far, since we don't know how
+  # far they are
+  for all $v \in V \setminus \{s\}$:
+    $d[v]$ = $\infty$
+
+  mark all vertices as unexplored
+
+  while $\exists$ unexplored vertices:
+    let $u$ be the unexplored vertex with smallest $d[u]$
+
+    for each neighbor $v$ of $u$:
+      let $w_{uv} \in E$ be the weight of the edge connecting $u$ to $v$
+
+      if $d[u]$ + $w_{uv}$ < $d[v]$:
+        # this is a better upper bound
+        $d[v]$ = $d[u]$ + $w_{uv}$
+        $\pr[v]$ = $u$
+      end if
+    end for
+
+    marked $u$ as explored
+  end while
+  \end{lstlisting}
+
+  \subsubsection{Proof of Dijkstra's algorithm}
+
+  \note {
+    Dijkstra's algorithm requires all edge weights to be {\bf positive}.
+  }
+
+  \Lemma {
+    When a vertex $v$ is explored, $d[v]$ is the distance from $s$ to $v$.
+  }
+  {
+    {\it By induction on the number of explored vertices}.
+
+    By induction on the number of explored vertices. Clearly, it holds when only
+    $s$ is explored.
+
+    Suppose that the lemma holds when there are $k$ explored vertices. Let $v$
+    be the $(k + 1)^{\text{st}}$ explored vertex, and let $\pr[v] = u$.
+
+    Suppose for the sake of contradiction, that the shortest path from $s$ to
+    $v$ does not go through $u$. Instead, let $x \ne u$ be the last explored
+    vertex on the shortest path, and let $y$ be its unexplored neighbor on this
+    path.
+
+    Note that $y \ne v$, otherwise the algorithm would choose $u = x$.
+
+    \begin{align*}
+      \text{dist}(s, v) <&d[v] \\
+                      \le&d[y]          &\text{since we chose to add $v$ before $y$} \\
+                      =&\text{length of a path from $s$ to $y$ found} & \\
+                    \le&\text{dist}(s, v) &\text{since, by contradiction, $y$ is on the shorted path from $s$ to $v$} \end{align*}
+
+    But this is a contradiction, so the shorted path from $s$ to $v$ must go through
+    $u$, and it must be the case that
+
+    \[
+      \text{dist}(s, v) = d[u] + w_{uv} = d[v]
+    \]
+  }
+
+  % {\bf Picture}
+
+  % \TODO{} this picture means nothing, either finish it or remove it.
+  %
+  % \begin{center}
+  %   \begin{tikzpicture}[node distance={15mm}, thick, main/.style = {draw, circle}]
+  %     \draw[gray] (0,0) ellipse (2cm and 1cm);
+  %
+  %     \node[main] (1) {$s$};
+  %     \node[main] (2) [right of=1] {$u$};
+  %     % \node[main] (2) [right of=1] {$v$};
+  %     %
+  %     % \node[main] (3) [right of=2] {$u$}; 
+  %     % \node[main] (4) [right of=3] {};
+  %     % \node[main] (5) [right of=4] {$v$}; 
+  %     %
+  %     % \draw (1) -- (2);
+  %     % \draw (3) -- (4);
+  %     % \draw (4) -- (5);
+  %   \end{tikzpicture}
+  % \end{center}
+
+  \subsubsection{Running Time}
+
+  The running time of Dijkstra's algorithm is very similar to the other algorithms
+  we've seen so far. It can be shown that the running time is $\O(m + n)$.
+
+  \newpage
+
+  \subsection{Minimum Spanning Trees}
+
+  We're interested in finding a spanning tree for a given graph. But now we don't
+  want to find the distance between any two vertices, but we want to {\it minimize
+  the total minimum weight of the edges in the tree}.
+
+  These weights just have to be real numbers, they don't have to be positive.
+
+  % \TODO{} verify the above.
+
+  If we want to have a communications networks between nodes, this might be
+  applicable. The edge weight might represent the cost of building that cable, or
+  the distance, or anything else that you want.
+
+  {\bf Example}
+
+  \begin{center}
+    \begin{tikzpicture}[node distance={15mm}, thick, main/.style = {draw, circle}] 
+      \node[main] (1) {};
+      \node[main] (2) [right of=1] {};
+      \node[main] (5) [below right of=2] {}; 
+      \node[main] (4) [below left of=5] {};
+      \node[main] (3) [left of=4] {}; 
+
+      \draw[red, very thick] (1) -- node[above] {3} (2) ;
+      \draw[red, very thick] (2) -- node[left] {1} (4);
+      \draw[red, very thick] (1) -- node[left] {2} (3);
+      \draw (3) -- node[below] {3} (4);
+      \draw[red, very thick] (4) -- node[below] {2} (5);
+      \draw (2) -- node[above] {7} (5);
+    \end{tikzpicture}
+  \end{center}
+
+  In this graph, the red edges form a minimum spanning tree. Note that there can
+  be multiple minimum spanning trees from a single graph.
+
+  {\bf Question}
+
+  How do we know which edges to add to our tree?
+
+  \Definition {Cut} {
+    A {\bf Cut} is a {\it bipartition} (a partition into two sets) of the
+    vertices, $V = A \cup B$ with $A \cap B = \emptyset$.
+
+    A cut is {\bf non-trivial} if both $A$ and $B$ are non-empty.
+
+    An edge {\bf crosses} the cut if it has one end in $A$ and one end in $B$.
+  }
+
+  \Lemma {
+    Assume that all edge weights are distinct. Let $(A, B)$ be a non-trivial
+    cut, and let $e$ be the minimum weight edge crossing this cut. Then, any
+    minimum spanning tree must contain $e$.
+
+    We will prove this using an {\it exchange argument} (we will use this again
+    a lot for greedy algorithms as well as scheduling algorithms.)
+  }
+  {
+    Let $T'$ be a spanning tree that does {\it not} contain $e = \{u, v\}$. Since
+    $T'$ is spanning, there is {\it a unique, simple} path from $u$ to $v$.
+
+    Since $e$ crosses the cut, there must be {\it at least} one edge along the path
+    from $u$ to $v$ that crosses the cut (if there is more than one, that's fine),
+    call this edge $e'$.
+
+    {
+      \it At this point, our graph is partitioned into two parts, $A$, and $B$.
+      $e$ is not in the MST, but $e'$ is. Both $e$ and $e'$ cross from $A$ to
+      $B$. What we're gonna do here is swap edge $e$ and $e'$
+    }
+
+    Construct a new spanning tree $T$ from $T'$ by deleting $e'$ and adding $e$.
+
+    This is still a tree since the number of vertices is $n$, the number of edges is
+    $n - 1$, and the graph is fully connected. Therefore it cannot contain any
+    cycles.
+
+    Since the weight of $e$ is less than the weight of $e'$, this change lowers the
+    total edge weight of the spanning tree.
+  }
+
+  Using this lemma, let's now look at various algorithms for finding MSTs.
+
+  \subsubsection{Kruskal's Algorithm}
+
+  {\bf Main Idea}: {\it Add the lowest cost edge that doesn't create a cycle.}
+
+  {\bf Process}
+
+  \begin{enumerate}
+    \item Sort all edges in $G$ by weight, lowest to highest.
+    \item Iterate through sorted edges, add it to the Minimum Spanning Tree {\bf
+      if} it doesn't create a cycle.
+  \end{enumerate}
+
+  % \begin{lstlisting}
+  % Kruskal($G$):
+  %   Add the lowest cost edge that doesn't create a cycle.
+  % \end{lstlisting}
+
+  {\bf Correctness}
+
+  \Theorem {
+    Kruskal's Algorithm always outputs a Minimum Spanning Tree.
+  }
+  {
+    Suppose that the algorithm adds the edge $e = \{u, v\}$ to the forest $F$.
+    Consider the cut induced by the component of $u$ in $F$.
+
+    {
+      \it One side of this cut is everything connected to $u$, and the other side
+      is everything connected to $v$.
+    }
+
+    Clearly, $e$ crosses this cut and, by definition, it is the minimum weight
+    edge with that property. So by the Lemma, any MST must include $e$.
+
+    {
+      \it Note that this works at any stage along the algorithm. So the only thing
+      that we need now is to show that the output is a spanning tree, and if it
+      is, it will automatically be minimal.
+    }
+
+    Note also that it clearly does not create a cycle. If the graph were not
+    connected, then it could add some edge without creating a cycle, so the output
+    must be a tree.
+  }
+
+  Let's now look at another way to produce Minimum Spanning Trees: Prim's algorithm.
+
+  {\bf Running Time}
+
+  For Kruskal's algorithm, a {\it union-find} data structure is helpful. If done
+  properly, the running time can be $\O(m \log n)$.
+
+  \subsubsection{Prim's Algorithm}
+
+  {\bf Main Idea}: {\it Chose a root to grow a Spanning Tree from.}
+
+  {\bf Process}
+
+  \begin{enumerate}
+    \item Chose a starting vertex. This is the root of the Minimum Spanning Tree.
+    \item Look at the set of all edges connected to the nodes in our Minimum
+      Spanning Tree.
+
+    \item From these edges, only consider the ones that point to
+      vertices that are {\bf not} already in our MST. As you go, mark vertices
+      as explored.
+
+    \item Of these edges, add the one with lowest weight.
+      %
+      % Repeatedly add the non-tree vertex with the lowest connection cost.
+      %
+      % Look at every vertex in your spanning tree thus far, and find the vertex
+      % whose edge has the lowest weight, this is the vertex that you add.
+  \end{enumerate}
+
+  Repeat this process until all vertices are explored.
+
+  {\bf Correctness}
+
+  \Theorem {
+    Prim's algorithm outputs a MST.
+  }
+  {
+    Suppose the algorithm adds edge $e = \{u, v\}$ to the forest $F$. Consider the
+    cut induced by component of the root (from which the algorithm builds the
+    tree).
+
+    Clearly $e$ crosses this cut and, by definition, it is the minimum weight edge
+    with that property.
+
+    So by the Lemma, every MST contains $e$ and so clearly, Prim's algorithm
+    outputs a Spanning Tree.
+  }
+
+  \note {
+    Both of these algorithms pertain to undirected graphs. The graphs {\it could}
+    have cycles.
+
+    Both of these algorithms are also {\it greedy}.
+  }
+
+  Implementing these algorithms efficiently require choosing good data structures.
+
+  {\bf Running Time}
+
+  For Prim's algorithm, you often want a {\it priority queue} to store edges of
+  the graph. If done properly, a running time of $\O(m\log n)$ is possible.
+
+  \subsection{Scheduling}
+
+  % \note {
+  %   On Feb. 28 Class will be in ESJ 2204.
+  % }
+  %
+  % \note {
+  %   Midterm is on march 9th. There is only one exam
+  % }
+
+  {\it You have to be very careful in how you're greedy to get an algorithm that
+  works.}
+
+  This is another set of greedy algorithms.
+
+  \note {
+    {\bf Midterm}
+
+    Divide and conquer might be the last topic before the midterm.
+  }
+
+  We'll look at 3 different examples of scheduling algorithms. 
+
+  \subsubsection{Interval Scheduling}
+
+  {\it Which classes should be in which rooms.}
+
+  For now, suppose that we have one room, and a bunch of requests for it. How many
+  classes can you schedule.
+
+  Suppose that you are given $n$ request, which come with starting times $s_i$ and
+  finishing times $f_i$ for an $1 \le i \le n$. Note that $f_i \le s_i$.
+
+  We cannot hold two classes at the same time. A subset of requests is {\bf
+  compatible} if no two of the intervals overlap in time.
+
+  {\bf Goal}
+
+  Our goal is to hold as many classes as possible, and the duration of a class
+  does not matter to us (a 10 minute class is just as valuable as a 90 minute
+  class).
+
+  Let's look at an example
+
+  % {\bf Example}
+  %
+  % \TODO{} Draw schedule picture from Feb 23
+  %
+  % In this example, $2, 5, 6$ satisfies the problem but $1, 5, 6$ also work.
+
+  \note {
+    In general, {\it solutions may not be unique, but we only need to find one}.
+  }
+
+  How do we write such an algorithm? We want to find the {\it best} solution.
+  What's a natural way to be greedy here? In what order should we look at the
+  intervals? This is going to matter a lot.
+
+  {\sc Idea 1}.
+
+  What if we try to think about the shortest activities first? This is actually
+  sub-optimal, If you have a really long task and another really long task, with a
+  really short task right between the two long tasks, then you're not doing as
+  best as you could.
+
+  {\sc Idea 2}.
+
+  What if we try to find the activity with the minimum number of conflicts first?
+  This is very natural, but not optimal. You can give a counter example to this,
+  even if it's not easy.
+
+  {\sc Idea 3}.
+
+  What if we sort activities by starting time? This is sub-optimal. What if the
+  earliest starting interval finishes last? What if it knocks out 10 other
+  intervals that could have been better?
+
+  {\sc Idea 4}.
+
+  What if we consider each interval on its own, and then find the earliest
+  finishing one? This is optimal! (among potentially many other solutions).
+
+  Find the earliest activity first, 
+
+  {\bf Pseudocode}
+
+  \begin{lstlisting}
+GreedyIntervalSchedule($s$, $f$):
+  sort tasks by increasing order of finishing times.
+  # note that you will need to sort $s$ in the same way as $f$
+
+  let $A = \emptyset$
+  let $f_\text{prev} = -\infty$
+
+  for i in 1 to n:
+    # this interval starts after the previous interval finishes it doesn't
+    # conflict, so add it
+    if $s_i > f_\text{prev}$:
+      add task $i$ to $A$
+      set $f_\text{prev} = f_i$
+    end
+  end
+end
+  \end{lstlisting}
+
+  This is clearly $\O(n \log n)$ for sorting, since everything else is constant
+  time.
+
+
+
+  {\bf Proof of Correctness}
+
+  Why does this work?
+
+  \begin{enumerate}
+    \item There are no conflicts, since we only schedule a task that starts after
+      the current one ends.
+
+    \item We'll show that the number of tasks is maximal by an {\bf exchange
+      argument}. We can also show that this algorithm stays ahead (see book.)
+  \end{enumerate}
+
+  \Theorem {
+    \texttt{GreedyIntervalSchedule} outputs an optimal schedule.
+  }
+  {
+    Let $G = (g_1, g_2, ..., g_k)$ be the greedy schedule, with indices
+    representing tasks in order of increasing finish time.
+
+    Let $B = (b_1, ..., b_l)$ be an optimal schedule, with $l \ge k$.
+
+    % \btw { Want to conclude that $l = k$ }
+
+    Let $j$ be the first index where the schedules differ
+
+    \[
+      g_1 = b_1, \dots, g_j = b_j, g_{j + 1} \ne b_{j + 1} \dots
+    \]
+
+    Now switch $B' = (g_1, \dots, g_{j - 1}, g_j, b_{j + 1}, \dots, b_l)$. By the
+    greedy choice, we know that the finishing time of $g_j \le b_j$, so there are
+    no conflicts, and it is just as long: $l$ intervals.
+
+    \btw{
+      This is the essence of the exchange argument. We started with a
+      perfect schedule and demonstrated that we could exchange it inductively and
+      retain an optimal schedule.
+    }
+
+    Repeating this process, we get a schedule
+
+    \[
+      (g_1, \dots, g_k, b_{k + 1}, \dots, b_l)
+    \]
+
+    If $l > k$, then $b_{k + 1}$ is the index of some interval that the greedy
+    algorithm could have scheduled, but it didn't which is a contradiction, so $l$
+    must equal $k$.
+
+    Therefore the greedy algorithm is optimal.
+  }
+
+  \note {
+    Solutions to the greedy algorithm may not be unique! It's possible to use
+    this exchange argument to produce different optimal schedules.
+  }
+
+  \subsubsection{Interval Partitioning}
+
+  Suppose that we must schedule all intervals, given again by starting and
+  finishing times, while minimizing the number of resources used (in this case,
+  the number of classrooms, where each classroom is the same size).
+
+  What is the minimum number of classes necessary to accommodate all schedules?
+
+  % {\bf Example}
+  %
+  % \TODO{} Draw picture
+  %
+  % Here, 3 intervals suffice. It's impossible to get 2 however, the reason for this
+  % is that there are 3 simultaneous classes at the end of the day.
+  %
+  % You can use this {\it dashed line} to find bounds on the problem more easily.
+  %
+  % Let's call this lower bound the depth.
+
+  \Definition {Interval Depth} {
+    The {\bf depth} of a set of intervals is the maximum 
+
+    \[
+      \text{max}_t \Big\{i \in \{ 1, \dots, n\} : t \in [s_i, f_i] \Big\}
+    \]
+
+    In other words, for every $1 \le i \le n$, this is the maximum number of
+    overlapping intervals.
+
+    Which is the largest number of overlapping subsets.
+  }
+
+  \note {
+    The depth is {\it always} the optimal solution. It's possible to always reach
+    it.
+  }
+
+  {\bf Greedy Approach}
+
+  Scan through intervals in increasing order of start time. Assign each to any
+  available resource from 
+
+  \[
+    \{1, \dots, \text{depth}\}
+  \]
+
+  \Theorem {
+    This algorithm assigns a color from $\{1, \dots, \text{depth}\}$ to every
+    interval and no two overlapping intervals have the same color.
+  }
+  {
+    When we assign a color, it is, by definition of the algorithm, different from
+    the colors of all the overlapping intervals that are already scheduled. So
+    because of that, we never assign the same color to overlapping intervals.
+
+    Suppose that, when we are considering the $i^\text{th}$ interval, it overlaps
+    $t$ previous intervals. So, in the input, there exists $t + 1$ overlapping
+    intervals. So the depth is at least $t + 1$, but conversely, that tells us
+    that $t$ is at most $\text{depth} - 1$. So there is always a color available.
+  }
+
+  The pseudocode for this algorithm was not shown in class, but it was mentioned
+  that optimal runtime was $\O(n \log n)$.
+
+
+
+  \subsection{Schedule to Minimize Lateness}
+
+  We have a number of schedules, and only one room. We have to schedule all of
+  them. Each schedule is defined by a duration and a deadline. There's some
+  time by which we would like to finish the request. There is not specified
+  starting time. Let's formalize this.
+
+  {\bf Setup}: We are given tasks with duration $t_i$, and deadline $d_i$.
+
+  It might not be possible to always satisfy each deadline, but we want to
+  minimize lateness.
+
+  If we schedule job $i$ from the interval $[s_i, f_i]$ with $f_i = s_i + t_i$.
+  We say that the lateness of job $i$, called $l_i$ is defined as follows
+
+  \[
+    l_i = \max(0, f_i - d_i)
+  \]
+
+  In other words, it's either $0$ if the job finishes before its deadline, or
+  some positive real number otherwise.
+
+  Concretely, our goal is to schedule all jobs without overlaps, while
+  minimizing the worst case lateness defined as $\max_i(l_i)$.
+
+  \note {
+    Here we are not trying to minimize {\it total} lateness, just the {\it
+    worst} lateness.
+  }
+
+  Let's look at an example
+
+  \Example {
+    Let's look at the following jobs.
+
+    $J = \{(t_1 = 1, d_1 = 2), (t_2 = 3, d_2 = 1)\}$
+  }
+  {
+    It's always in our best interest to have a job running at any time if we are
+    free.
+
+    From this job list, we can chose to run the jobs in the following order
+
+    $1, 2$, for which the lateness would be $l_1 = 0, l_2 = 3$
+    or $2, 1$ for which the lateness would be $l_1 = 2, l_2 = 2$
+
+    Since the worst case lateness in the second ordering is only $2$, the second
+    ordering is better.
+  }
+
+  We'll solve this problem using a greedy strategy. Let's first take a look at
+  some natural approaches we could take for this problem.
+
+  {\bf Approaches}
+
+  \begin{enumerate}
+    \item Go in order of increasing deadline. Start with the job with the
+      earliest deadline $d_i$. This {\it will} actually prove to be optimal!
+
+    \item Go in order of shortest duration $t_i$ first. If you have some jobs
+      you could get done quickly, you might want to get those out of the way
+      first. Unfortunately this is can be shown not to be optimal
+
+      Consider the following jobs
+
+      $J = \{(t_1 = 0, d_1 = 100), (t_2 = 10, d_1 = 10)\}$
+
+      Then we would do $t_1$ first, and then $t_2$, which would yield a max
+      lateness of $10$, whereas doing $t_2$ and then $t_1$ would yield $0$
+      lateness.
+
+    \item Go in order of ``slack": How much extra time remains after a job
+      finishes? Jobs that give you the highest amount of slack sound really good
+      to do first, surely. It can be shown that this is also not optimal.
+  \end{enumerate}
+
+  What this illustrates is that the {\it way} in which we are greedy about a
+  problem matters a lot. There are many things that sound sensible to do, but
+  actually lead to sub-optimal solutions. It's worth taking the time to try to
+  figure out what to be greedy about.
+
+  We'll now look into the first approach, and prove that it is optimal by an
+  exchange argument.
+
+  To help understand why this is optimal, we'll first introduce the concept of
+  an {\it inversion}.
+
+  \definition {
+    A schedule has an {\bf Inversion} if job $i$ comes before job $j$, but it is
+    also the case that $d_i > d_j$.
+  }
+
+  Recall that our approach is to sort by increasing deadline. If in our
+  ordering we have two jobs whose deadlines behave in the way defined above, it
+  is what we call an inversion.
+
+  In our optimal schedule, we want no inversion.
+
+  \Lemma {
+    All schedules with no inversions (there can be more than one!) and no idle
+    time (this is assumed, just remove the idle time otherwise) have the same max lateness.
+  }
+  {
+    \btw {
+      How can this happen? Well let's first ask how we can have two different
+      schedules with no inversions. This can only be the case if two jobs have
+      the same deadline! After all if they did not, they would be in some order
+      according to our greedy strategy.
+    }
+
+    The only flexibility in such a schedule is in the order of jobs with the
+    same deadline. Moreover, any such jobs would be ordered consecutively. The
+    finishing time of the last of these jobs doesn't depend on the ordering.
+  }
+
+  \Lemma {
+    There is an optimal schedule with no inversions (and no idle time).
+  }
+  {
+    We'll prove this using an exchange argument.
+
+    {\it Goal}. We'll suppose that we have an optimal schedule which {\it has}
+    inversions, then we'll show that we can exchange out such inversions without
+    losing quality.
+
+    If there is an inversion, then there must be jobs $i, j$ which are adjacent
+    (with $i$ before $j$ WLOG) with $d_i < d_j$. In other words, if we have an
+    inversion (adjacent or not), then we {\it must} have an adjacent inversion.
+    You can reason about this by contradiction, but the argument is a sort of
+    intermediate value theorem.
+
+    Now we'll swap the two jobs and see what happens to the lateness. This
+    decreases the total number of inversions. The claim now is that the max
+    lateness is no worse.
+
+    Swapping $i$ and $j$ gives a schedule with one less inversion, and we claim
+    that there is no worse lateness.
+
+    Why is the lateness no worse? Well suppose we have the following scenario.
+    Job $i$ comes before job $j$, and $d_j < d_i$ come before the start of job
+    $i$. Then, it's clear that that the max lateness is driven by $f_j - d_j$.
+
+    Swapping $i$ and $j$, the lateness is
+
+    \[
+      \max(f_j - d_i, (s_i + f_j - s_j) - d_j) = \max(f_j - d_i, f_j - d_j - (s_j - s_i))
+    \]
+
+    but $s_j - s_i \ge 0$. Clearly the lateness we get by doing this is going to
+    be $l \le f_j - d_j$ since $d_i > d_j$ and $s_j - s_i \ge 0$.
+
+    Repeating this, we eventually get a schedule with no inversions and no worse
+    lateness.
+  }
+
+
+
+
+
+  \newpage
+
+  \sidenote {
+    Exam one week from today. No calculator needed, can bring notes.
+    For proofs, you don't need to write five pages. See solutions for examples.
+
+    Format of the exam: similar to practice problems. Suggestion: make a question
+    out of three short answer questions. Longer questions are problems are gonna be
+    like homework questions. Proving mathematical fact, run algorithm that you know
+    on some data, etc...
+
+    Look at practice problems!
+
+    Assignment 2 should be graded a bit before exam 2
+  }
+
+  \section{Divide and Conquer}
+  {\it This is the last topic on the exam}
+
+  {\bf Main Idea}: Divide into sub problems, usually 2, but not necessarily. We'
+  solve the sub problems recursively, and merge the solutions, maybe with some
+  additional work, to solve the overall problem.
+
+  \subsection{Merge Sort}
+
+  To sort a list of length $n$
+  \begin{itemize}
+    \item Divide the list in half
+    \item Sort each half, recursively, using this exact procedure.
+    \item Merge the two sorted lists. You can do this in linear time! This is what makes
+      Merge Sort great.
+  \end{itemize}
+
+  \subsubsection{Running Time}
+  
+  Let $T(n)$ be the running time on instances of length $n$. Let's write a
+  recurrence equation for Merge Sort.
+
+  \[
+    T(n) = 2 \cdot T(n / 2) + \O(n), \, \, T(1) = \O(1)
+  \]
+
+  \note {
+    The first part of the recurrence represents the work necessary to complete
+    Merge Sort on a list of length $n / 2$, which there are $2$ of. The second
+    part represents the work necessary to merge the two lists together.
+  }
+
+  Solving this recurrence, we get that $T(n) = \O(n \log n)$.
+
+  {\bf Question}: What if $n$ isn't even?
+
+  It's important to note what we're doing here. The recurrence equation we
+  described above represents an {\it upper bound} for the running time of Merge
+  Sort. If the two lists aren't the same size, then the time needed to sort each
+  will just be bounded above by the time necessary to sort twice the larger one,
+  and merge twice the larger one. If the lists aren't the same size, the time
+  can only be better.
+
+  % Last time we talked about Merge Sort, how to give an $\O(n \log n)$ time. We saw
+  % the general structure of how it worked. Merge can be done in linear time.
+  %
+  % {\bf Merge Sort Recurrence}
+  % \begin{align*}
+  %   T(n) =&2 \cdot T(n / 2) + \O(n) \\
+  %        =&\O(n \log n)
+  % \end{align*}
+
+  Not {\it all} divide and conquer algorithms are $\O(n \log n)$. Recall Karatsuba
+  multiplication, which is also divide and conquer. This algorithm was still
+  $\O(n^2)$, but just had a better constant term.
+
+  \subsection{Closest Points}
+
+  Suppose we have $n$ points in in the plane, and we want to find the two closest
+  points.
+
+  \subsubsection{One Dimensional Case}
+  We explored a simpler version of this problem in one dimension. Suppose that
+  instead the points are in a line, how do you find the closest two? If the points
+  are given in arbitrary order you have to sort, and then go through them from
+  left to right.
+
+  In one dimension, you sort by $x$ coordinate but you can't just do that in 2
+  dimensions. Still, we can sort the points in {\it some} way that can help. Once
+  the points are sorted, we can work with them in some other way.
+
+  Let's define the problem better.
+
+  \subsubsection{Two Dimensional Case}
+
+  Suppose that we are given $n$ points in a plane, in no order whatsoever, and
+  no two points overlap.
+
+  % We want to divide the points into halves.
+
+  {\bf Main Idea}: We could recursively subdivide the points into left and right
+  based on the {\it median} $x$ coordinate of the points, and divide left and
+  right. Then we solve the closest pair problem on each half. 
+
+  \note {
+  The closest pair of points {\it could} be across the line, our algorithm needs
+  to consider this. In other words we want to check whether there is a closer
+  pair with one on the left and one on the right.
+  }
+
+  As we recurse, we maintain lists of the points in our subsets sorted by $x$ and
+  $y$ coordinate. We store this is in 2 separate lists by just sorting the indices
+  on $x$ and $y$.
+
+  Let's define some notation.
+
+  Suppose that the input points $P = \{p_1, \dots, p_n\}$ where $p_i = (x_i,
+  y_i)$. 
+  \begin{itemize}
+    \item Let $Q$ be the points in $P$ with the first $\lceil n / 2 \rceil$ $x$
+      coordinates, and let $R$ be the points in $P$ with the last $\lfloor n / 2
+      \rfloor$ $x$ coordinates, in other words: the remaining points.
+
+    \item We recursively find the closest points in $Q$, call them $q_0^*,
+      q_1^*$, and $R$, call then $r_0^*, r_1^*$.
+
+    \item Let $\delta$ be the minimum between $\text{dist}(q_0^*, q_1^*)$, and
+      $\text{dist}(r_0^*, r_1^*)$.
+
+      In other words, $\delta$ represents the distance between the two closest
+      points either on the left side, or the right side of the line.
+
+    \item Let $x^*$ be the largest $x$ coordinate of a point in $Q$.
+
+      In other words, $x^*$ is the point closest to the line on the side of $Q$.
+      In fact, the line crosses over the point $x^*$.
+
+    \item Let $L$ be the line $x = x^*$.
+  \end{itemize}
+
+  \btw {
+    So what we're doing here is that we look at every point in $Q$ and $R$, and
+    find the closest two and we define $\delta$ based on this distance. 
+
+    But what if the closest two points are actually between $Q$ and $R$? Let's
+    explore this possibility in the next lemma.
+  }
+
+  {\bf Lemma}. If there is a $q \in Q$ and $r \in R$ with $\text{dist}(q, r) <
+  \delta$, then both $q$ and $r$ are within $\delta$ of $L$.
+
+  What this tells us is that we can restrict attention to a strip of length
+  $2\delta$ centered on $L$. This is nice, but keep in mind that all points could
+  be in that strip.
+
+  \Lemma {
+    If two points in $S$ have distance less than $\delta$, then they're within
+    15 positions of each other in the list of points sorted by $y$ coordinate.
+
+    {\it Why 15? Who knows! Its just some weird constant not explained in class.
+    Just believe in the Lemma}.
+  }
+  {
+    Divide $S$ into squares of side length $\frac{\delta}{2}$.
+
+    {\bf Claim}. No two points can be in the same square. If they were, then
+    $\delta$ would be smaller by definition of $\delta$.
+
+    Suppose that two points in $S$ are 16 or more positions apart in the list sorted
+    by $y$ coordinate. Then they have to differ by {\it at least} 3 rows of boxes,
+    so they have distance at least
+
+    \[
+      3 \cdot \frac{\delta}{2} > \delta
+    \]
+
+    In other words, {\it because} their distance is greater than $\delta$, then
+    there {\it must} be {\it at least} 3 empty boxes between them.
+  }
+
+
+  \subsubsection{Running Time}
+
+  The cost of finding the two closest points is $T(n / 2)$. Since there are two
+  sides we have cost
+
+  $T(n) = 2T(n / 2) + \O(n)$
+
+  Where $\O(n)$ is the cost of merging the two sides, and since the lists are
+  sorted, the cost of this is linear.
+
+  \subsection{Fast Fourier Transform}
+
+  {\it This is one of the best algorithms of all time}
+
+  This is a great way to multiply polynomials, but it's also used in signal
+  processing, and many other fields. For now, we'll restrict our problem to the
+  following.
+
+  Suppose that we are given a polynomial $a(x), b(x)$ of degree $n - 1$
+
+  \[
+    a(x) = a_0 + a_1x + \cdots + a_{n - 1}x^{n - 1}
+  \]
+
+  and
+
+  \[
+    b(x) = b_0 + b_1x + \cdots + b_{n - 1}x^{n - 1}
+  \]
+
+  Suppose now that $c(x)$ is defined as $c(x) = a(x) \cdot b(x)$. We'll see how to
+  multiply this next time.
+
+  \sidenote {
+    Everything about Divide and Conquer is on the exam. Dynamic Programming is
+    not.
+  }
+
+  \sidenote {
+    The Fast Fourier transform uses some linear algebra. You aren't really
+    responsible for this part on the exam, just know how exactly the task is
+    divided.
+  }
+
+  We've been talking about Divide and Conquer algorithms, we looked at the
+  closest points problem and we started talking about polynomial multiplication,
+  which will motivate the Fast Fourier Transform.
+  
+  Recall polynomial multiplication, we can suppose that the coefficients are in
+  $\R$, or even $\C$ if we wanted to.
+
+  \[
+    a(x) = a_0 + a_1x + \cdots + a_{n - 1}x^{n - 1}
+  \]
+
+  and
+
+  \[
+    b(x) = b_0 + b_1x + \cdots + b_{n - 1}x^{n - 1}
+  \]
+
+  Suppose now that $c(x)$ is defined as $c(x) = a(x) b(x)$.
+
+  What is $c(x)$?
+
+  \begin{align*}
+    c(x) =&a(x) \cdot b(b) \\
+         =&\left(\sum_{j = 0}^{n - 1}a_j \cdot x^j\right)\left(\sum_{j = 0}^{n - 1}b_j \cdot x^j\right) \\
+         =&\sum_{j,k = 0}^{n - 1} a_j \cdot b_k \cdot x^{j + k} & \text{Can combine the sums} \\
+         =&\sum_{l = 0}^{2n - 2} \left( \sum_{j = 0}^{l} a_j \cdot b_{l - j} \right) x^l & \text{$l = j + k$, both go up to $n - 1$} \\
+         =&\sum_{l = 0}^{2n - 2} c_l x^l & \text{Define $c_l = \sum_{j = 0}^{l} a_j \cdot b_{l - j}$} \\
+  \end{align*}
+
+  \note {
+    If both $a(x)$ and $b(x)$ are both degree $n - 1$, $c(x) = a(x)b(x)$ will be of degree $l = 2n - 2$.
+
+    More generally, if $a(x)$ is degree $n$ and $b(x)$ is degree $m$, then $c(x) = a(x)b(x)$ is
+    degree $nm$.
+  }
+
+  What we can gather from this is that, if we were to compute this manually, it
+  would be $\O(n^2)$. However using Divide and Conquer can really help us here.
+
+  {\bf Main Idea}: Use polynomial Interpolation.
+
+  A degree $d$ polynomial can be uniquely specified by its values at any $d + 1$
+  points. Not necessarily its roots, but {\it any} points on that polynomial
+
+  \note {
+    If you plot $2$ two points, there's a unique line that goes through them. If
+    you plot $3$ points, there is a unique parabola that goes through them. If
+    you plot $4$ points, there is a unique cubic, etc...
+
+    More generally, given $n$ points, there is a unique polynomial of degree $n
+    + 1$ that goes through it.
+  }
+
+  This is a linear amount of work! If we can somehow divide and conquer on this,
+  we have an algorithm. Let's devise a strategy.
+
+  \subsubsection{Strategy}
+
+  \begin{enumerate}
+    \item Evaluate the polynomials $a$ and $b$ on $2n - 1$ points. Somehow, we
+      have to do this in close to linear time.
+
+      {\it We'll have to pick these points carefully!}
+
+      \note {
+        You need $2n - 1$ points because $c(x)$ is degree $2n - 2$, and
+        you need one more point to identify $c$ from that, from the previous
+        note.
+      }
+
+    \item Evaluate $c(x)$ on those points.
+
+    \item Reconstruct the coefficients of $c(x)$ from the points.
+
+  \end{enumerate}
+
+  \btw {
+    We'll see that (1) and (3) are actually the same problems in reverse!
+  }
+
+  Now let's dive deeper into each step.
+
+  \subsubsection{Process}
+
+  \begin{enumerate}
+    \item {\it Evaluate $a$, $b$ on $2n - 1$ points}
+       
+      First we compute $\O(n)$ points on $a$ and $b$, each of which takes $O(n)$ time to
+      evaluate individually, since both polynomials have $\O(n)$ terms. 
+
+      Consider evaluating a polynomial of degree $d - 1$ at $d$ points $x_0,
+      x_1, \dots, x_{d - 1}$
+
+      \[
+        a(x_j) = a_0 + a_1 x_j + \cdots + a_{d - 1} x_j^{d - 1}
+      \]
+
+      Assume $d$ is even for simplicity. Define
+
+      \begin{align*}
+        a_\text{even}(x) =&a_0 + a_2 x + a_4 x^2 + \cdots + a_{d - 2} x^{(d / 2) - 1} \\
+        a_\text{odd}(x) =&a_1 + a_3 x + a_5 x^2 + \cdots + a_{d - 1} x^{(d / 2) - 1}
+      \end{align*}
+
+      Then we have
+
+      \[
+        a(x) = a_\text{even}(x^2) + x \cdot a_\text{odd}(x^2)
+      \]
+
+      Each of these polynomials are half the size.
+
+      {\bf Picking points carefully}
+
+      % \TODO{} Cleanup:
+      Consider the points $1, -1, i, -i$. Squaring these points, we get $1, 1,
+      -1, -1$. Squaring again, we get $1, 1, 1, 1$.
+
+      The natural choice for these points are the $d^\text{th}$ {\bf roots of
+      unity}!
+
+      \[
+        x_j = \omega_d^j
+      \]
+
+      Where $\omega_d = e^{\frac{2 \pi i}{d}}$.
+
+      \note {
+        If we square $d^\text{th}$ roots of unity, we get half as many points.
+
+        Let's see this in action.
+
+        $x_j = \omega_d^{j}$. Squaring, we get
+
+        \begin{align*}
+          x_j^2 =&\omega_d^{2j} \\
+          =&e^{\frac{2 \pi i}{d} (2j)} \\
+          =&e^{\frac{2 \pi i}{d} (2j) \Mod d} \\
+          % =&e^{\frac{4 \pi i}{d} j \Mod d} \\
+          =&\omega_d^{2j \Mod d} \\
+          =&x_{2j \Mod d}
+        \end{align*}
+
+        % \TODO{} cleanup and explain better
+      }
+
+      If $T(d)$ is the cost of evaluating $a(x)$ at $x_j$ for $j \in \{0, 1,
+      \dots, d - 1\}$, then we have
+
+      \begin{align*}
+        T(d) =&2T(d / 2) + \O(d) \\
+             =&\O(d \log d)
+      \end{align*}
+
+      Is the cost of evaluating $a(x)$ on $d$ points.
+
+      \note {
+        If our polynomial isn't perfectly even, we can pad it out to make it a
+        power of $2$. It doesn't really matter.
+      }
+
+    \item {\it Evaluate $c(x)$}
+
+      % \TODO{} what?? did we skip this??
+
+    \item {\it Reconstruct $c(x)$}
+
+      Consider how the coefficients of a polynomial relate to its evaluations at
+      $\omega_d^0, \omega_d^1, \dots, \omega_d^{d - 1}$.
+
+      So we have
+
+      \begin{align*}
+        a(x) =&a_0 + a_1 x a_2 x^2 + \cdots + a_{d - 1} x^{d - 1} \\
+        =&\begin{bmatrix}
+          1 & x & x^2 & \cdots & x^{d - 1}
+        \end{bmatrix}
+        \begin{bmatrix}
+          a_0 \\
+          a_1 \\
+          \vdots \\
+          a_{d - 1}
+        \end{bmatrix}
+      \end{align*}
+
+      So we have
+
+      \[
+        \underbrace {
+          \begin{bmatrix}
+            a(\omega_d^0) \\
+            a(\omega_d^1) \\
+            a(\omega_d^2) \\
+            \vdots \\
+            a(\omega_d^{d - 1})
+          \end{bmatrix}
+        }_{x}
+        =
+        \underbrace{
+          \begin{bmatrix}
+            1 & \omega_d^0 & \left( \omega_d^0 \right)^2 & \cdots & \left( \omega_d^0 \right)^{d - 1} \\
+            1 & \omega_d^1 & \left( \omega_d^1 \right)^2 & \cdots & \left( \omega_d^1 \right)^{d - 1} \\
+            1 & \omega_d^2 & \left( \omega_d^2 \right)^2 & \cdots & \left( \omega_d^2 \right)^{d - 1} \\
+            \vdots & \vdots & \vdots & \ddots & \vdots \\
+            1 & \omega_d^{d - 1} & \left( \omega_d^{d - 1} \right)^2 & \cdots & \left( \omega_d^{d - 1} \right)^{d - 1} \\
+          \end{bmatrix}
+        }_{F}
+        \underbrace{
+          \begin{bmatrix}
+            a_0 \\
+            a_1 \\
+            a_2 \\
+            \vdots \\
+            a_{d - 1}
+          \end{bmatrix}
+        }_{y}
+      \]
+
+      This is the discrete Fourier transform! As it turns out, $F$ is a unitary
+      matrix, meaning that its inverse is easy to compute.
+
+      We have (x = a omega vector). We want (y = ai vector). 
+
+      We have that
+
+      \[
+        x = \frac{1}{\sqrt{d}} F y
+      \]
+
+      So
+
+      \[
+        y = \sqrt{y} F^{-1} x
+      \]
+
+      which reconstructs $c$.
+
+      Since $F$ is unitary, $F^{-1}$ is just like $F$ with $\omega$ replaced
+      with $\frac{1}{\omega}$.
+
+  \end{enumerate}
+
+
+
+  \newpage
+  \section{Dynamic Programming}
+
+  This is another class of problems dividing into sub-problems, but more subtly.
+  In general the sub-problems will be overlapping here, whereas in divide and
+  conquer, they usually don't overlap. Essentially, by solving the smaller
+  sub-problems first, and use the results of the smaller sub-problems to more
+  easily solve the bigger sub-problem.
+
+  The best way to learn is by example.
+
+  \subsection{Weighted Interval Scheduling}
+
+  Recall the interval scheduling problem. We were given a bunch of intervals,
+  specified by their starting times $s_i$ and finishing times $f_i$. Our goal
+  was to find a largest possible subset of non-overlapping intervals.
+
+  The new twist is that not every interval is worth the same, they come with
+  their weights. Interval $i$ has a weight $v_i \in \R$. Our goal is now to
+  find a set of non-overlapping intervals $S$ that maximizes the sum of the
+  values of each of its intervals
+
+  \[
+    \sum_{i \in S} v_i
+  \]
+
+  Notice that the length of the interval doesn't really matter here (unless the
+  weight is the length of course.)
+
+  \subsubsection{Greedy Approach}
+
+  Notice that our greedy algorithm no longer works for this. Suppose that we
+  have two classes $a$ and $b$ in our schedule, where $a$ starts and finishes
+  inside of $b$, but suppose that $b$ is worth more (has a higher $v$). Our
+  greedy approach would pick $a$ because it finishes first, but that would be
+  sub-optimal.
+
+  We could try to schedule the highest weight interval first, but that also
+  doesn't work. What if you had the most valuable interval $a$ cover all others,
+  but the sum of all others outweighs $a$, then this approach would pick $a$
+  which is sub-optimal.
+
+  Dynamic Programming solves this problem very naturally, so we'll look at how
+  to do this now.
+
+  \subsubsection{Dynamic Programming Approach}
+
+  First we sort the intervals so that the finishing times are non-decreasing. In
+  other words, we want
+
+  \[
+    f_1 \le f_2 \le \cdots \le f_n
+  \]
+
+  which can be done in $\O(n \log n)$ time.
+
+  \note {
+    We write non-decreasing because two intervals can finish at the same time.
+  }
+
+  {\bf Ask}: Is the last interval (interval with the last finishing time) part
+  of the optimal solution?
+
+  {\bf Answer} Possibly?
+
+  \note{
+    What's important here is that we ask about a feature of the input, and run
+    over every possibility.
+  }
+
+  Let's start small with the question above. {\it Is the last interval part of
+  the optimal solution?}
+
+  \begin{itemize}
+    \item If the answer is No, then the optimal solution is the same as if that
+      last interval didn't exist at all.
+
+    \item If the answer is Yes, then the optimal solution contains the interval,
+      {\it plus} the optimal solution of the rest of the intervals {\it minus}
+      the intervals that overlap with the last. In other words,
+
+      \[
+        v_n + \opt(1, \dots, p_n)
+      \]
+
+      Where $p(j) = \max\{i < j : \text{intervals $i$ and $j$ are disjoint}\}$
+  \end{itemize}
+  
+  Let $\opt(j)$ be the optimal value for this scheduling problem on interval
+  $\{1, \dots, j\}$. Well now we can write a recurrence for $\opt(j)$
+
+  \[
+    \opt(j) = \max\{\opt(j - 1), v_j + \opt(p(j))\}
+  \]
+
+  \[
+    \opt(0) = 0
+  \]
+
+  Where the first parameter, $\opt(j - 1)$ tells us that the $j^\text{th}$
+  interval is not included, and the second tells us that it is.
+
+  \note {
+    In this formulation of the problem, we only return the optimal value, but
+    not {\it how} to construct such a schedule.
+
+    Changing the program to do this is actually surprisingly easy. At each
+    recursive step, simply return the current optimal schedule as well as the
+    current total sum.
+  }
+
+  \subsubsection{Recursive Algorithm}
+
+  {\it Assume that the intervals are sorted by finishing time, and that we've
+  pre-computed $p(j)$ for all intervals. These can be done in $\O(n \log n)$.}
+
+  \begin{lstlisting}
+ComputeOpt($j$):
+  # base case
+  if $j = 0$:
+    return 0
+
+  return max(
+    ComputeOpt(j - 1),
+    v_j + ComputeOpt(p(j))
+  )
+end
+  \end{lstlisting}
+
+  {\bf Claim}: This algorithm is correct. {\it We've already shown this by the
+  recurrence}.
+
+  {\bf Running Time}
+
+  For this sort of program, it's helpful to write a recurrence that we can use
+  to figure out the running time.
+
+  Let $T(j)$ denote the running time of \texttt{ComputeOpt($j$)}, then
+
+  \[
+    T(j) = T(j - 1) + T(p(j)) + \underbrace{\O(1)}_\text{Computing Max}
+  \]
+
+  \[
+    T(0) = \O(1)
+  \]
+
+  Firstly, we can note that $p(j)$ is at most $j - 1$. It's certainly not
+  greater than $j$, by definition. If this is the case, then we have
+
+  \[
+    T(j) = 2 \cdot T(j - 1) + \O(1)
+  \]
+
+  In the worst case. This grows exponentially (like $2^j$), oh no.
+
+  The reason that this algorithm is so bad is that it recomputes values over and
+  over again. Dynamic Programming fixes this by {\it caching} values that we've
+  already computed once.
+
+  Let's look at the Dynamic Programming approach now.
+
+  \subsubsection{Recursive Dynamic Programming Algorithm}
+  
+  We collect all the solutions of the sub-problems, and if we've already computed
+  sub-problems, we never have to compute it again.
+
+  \Definition {Memoization} {
+    {\bf Memoization} is the process of caching large computations, so that we don't
+    have to compute them more than once.
+  }
+
+  We define some array $M[j]$ for $1 \le j \le n$, initially set to $M[j] =
+  \emptyset$.
+
+  \begin{lstlisting}
+MemoComputeOpt(j):
+  # base case
+  if j $= 0$:
+    return 0
+
+  # if we've computed the value already
+  if M[j] $\ne \emptyset$:
+    return M[j]
+
+  # compute M[j]
+  M[j] = max(
+    ComputeOpt(j - 1),
+    v_j + ComputeOpt(p(j))
+  )
+
+  return M[j]
+end
+  \end{lstlisting}
+
+  We can then find the optimal solution by checking which term achieves the max.
+
+  \Lemma{
+    The running time of \texttt{MemoComputeOpt($n$)} is $\O(n)$.
+  }
+  {
+    The running time of \texttt{MemoComputeOpt($j$)} is $\O(1)$ plus the cost of
+    its recursive calls. The running time \texttt{MemoComputeOpt($n$)} is just
+    $\O(\text{total number of recursive calls})$.
+
+    But notice, we make at most $n$ recursive calls since there are only $n$
+    values of $M[j]$, and once we've computed $M[j]$, we never call
+    \texttt{MemoComputeOpt($j$)} again.
+
+    Therefore the running time must be $\O(n)$.
+  }
+
+  There is actually another way to write this program that doesn't involve
+  recursion. For that case, the running time analysis should be a lot clearer.
+
+  \subsection{Tabular Dynamic Programming Algorithm}
+
+  \begin{lstlisting}
+MemoComputeOpt(n):
+  let M[0] = 0
+
+  for j = 1 to n:
+    let M[j] = max(M[j - 1], v_j + M[p(j)])
+  end
+end
+  \end{lstlisting}
+
+  \note {
+    The order of this \texttt{for} loop matters a lot! Since we're running
+    through the values in order, we have that all values that we access are well
+    defined. Take a moment to make sure that this makes sense.
+  }
+
+  The most involved part of Dynamic Programming is finding what the sub-problems
+  should be. This mostly comes with practice.
+
+
+
+
+  \subsection{Knapsack}
+
+  \TODO{} Take notes for that lecture (last one before break)
+
+  \sidenote {
+    Homework 3 is due soon?
+  }
+
+  \subsection{Sequence Alignment}
+
+  {\it We have two strings, and we want to know how similar those two strings are.}
+
+  We want to compare strings, line them up, possibly with gaps, to minimize the
+  mismatches.
+
+  \example {
+    Suppose we have strings representing DNA sequences.
+
+    \texttt{GACGTTA} and \texttt{GAACGCTA}
+
+    We want to make them as similar as possible, we'll do this with alignment.
+
+    \begin{center}
+    \end{center}
+
+    \[
+      \begin{matrix}
+        G & A & \_ & C & G & T & T & A \\
+        G & A & A  & C & G & C & T & A
+      \end{matrix}
+    \]
+
+    The third to last column is a {\it mismatch}.
+  }
+
+  {\bf Setup}: To quantify the quality of an alignment, we define two types of
+  penalties.
+
+  \begin{itemize}
+    \item $\delta$: The {\it gap} penalty. This is the price we way of adding a gap in
+      a string.
+    \item $\alpha_{xy}$: The {\it mismatch} penalty. This is the penalty of
+      pairing up symbols $x$ and $y$ together. This value could depend on the
+      symbols. For example in our DNA analogy, it might be better to pair
+      \texttt{C}s with \texttt{G}s than \texttt{A}s.
+
+      Note that if $x = y$, then $\alpha_{xy} = 0$.
+  \end{itemize}
+
+  {\bf Goal}: Find the alignment of lowest total cost.
+
+  \example {
+    If we had instead done
+
+    \[
+      \begin{matrix}
+        G & A & \_ & C & G & \_ & T & T & A \\
+
+        G & A & A & C & G & C & T & \_ & A
+      \end{matrix}
+    \]
+
+    Then the cost would have been $3\delta$ because there are $3$ gaps, and
+    there are no mismatch penalties.
+  }
+
+  Now we're going to formalize this idea of alignment.
+
+  \Definition {Matching \& Alignment} {
+    Given strings $x \in \Sigma^n, y \in \Sigma^m$ where $\Sigma^i$ is our
+    alphabet. The superscript is the length of the string.
+
+    A {\bf matching} of sets $I$ and $J$ is a set of ordered pairs $(i, j)$ with
+    $i \in I$ and $j \in J$ such that each $i \in I$ and $j \in J$ appears at
+    most once.
+
+    $I, J$ are index sets of $x, y$ respectively.
+
+    A matching $M$ is $I = \{1, \dots, n\}$ and $J = \{1, \dots, m\}$ is an {\bf
+    alignment} if there are no "crossings". In other words, if $(i, j) \in M$
+    and $(i', j') \in M$ with $i < i'$, then $j < j'$.
+
+    \example {
+      $M = \{(1, 3), (2, 2)\}$ is a matching, but {\bf not} an alignment, since
+      $(1, 3)$ crosses over $2$.
+
+      \TODO{} What's a string that produces this $M$?
+
+      \begin{center}
+        \texttt{\_AB}
+
+        \texttt{ACB}
+      \end{center}
+
+      \begin{center}
+        \texttt{\_BA}
+
+        \texttt{ABC}
+      \end{center}
+
+      $M = \{(1, 1), (2, 3)\}$ is an alignment, but it has a gap.
+
+      \begin{center}
+        \texttt{A\_B}
+
+        \texttt{ABC}
+      \end{center}
+    }
+  }
+
+  \note {
+    In this problem, we are {\bf not} allowed to mutate the strings. We can't
+    change the letters, or their order. We can only add spaces between letters
+    to align them as ``best as possible", depending on the metric.
+  }
+
+  \subsubsection{Algorithm}
+
+  {\it To find this, it's helpful to work backwards and ask what happens at the
+  very end? Asking yes/no questions is helpful in this setting in order to best
+  align the two strings.}
+
+  {\bf Defining the sub-problem}
+
+  Are the last two symbols matched? In other words, is $(n, m) \in M$?
+
+  \btw {
+    This might not be the case, maybe the last characters are the same, and so it
+    makes sense to do, maybe they're different, but the penalty is worth paying.
+
+    The point is that, if these characters aren't matched with each other, then
+    there {\it must} be a gap. One of them has to be unpaired.
+  }
+
+  If not, then we know something more: either the last symbol or $x$ or the last
+  symbol of $y$ must be unpaired.
+
+  {\bf Why?}
+
+  If both $x_n$ and $y_m$ are matched, but not to each other, there must be a
+  crossing.
+
+  \note {
+    Crossings are not allowed because including a crossing in our matching
+    answer would mean swapping letters around in our original strings, which is
+    not allowed.
+  }
+
+  \TODO{} include picture from class (Mar 28, 14:47pm)
+
+  So we've identified the sub-problem! We want to focus on aligning $x_1, x_2,
+  \dots, x_i$ with $y_1, y_2, \dots, y_j$. Let $\opt(i, j)$ be the minimum cost
+  of an alignment between these sub-strings.
+
+  We start from the end of the string and ask
+
+  {\bf Question}: Is $x_i$ aligned with $y_j$?
+
+  \begin{itemize}
+    \item {\bf Yes}: Then
+
+      \[
+        \opt(i, j) = \alpha_{x_i, y_j} + \opt(i - 1, j - 1)
+      \]
+      
+    \item {\bf No}: Is $x_i$ unmatched?
+      \begin{itemize}
+        \item {\bf Yes}: Then
+
+          \[
+            \opt(i, j) = \delta + \opt(i - 1, j)
+          \]
+
+        \item {\bf No}: Then $y_j$ must be unmatched, so
+
+          \[
+            \opt(i, j) = \delta + \opt(i, j - 1)
+          \]
+
+          Note that $y$ must be unmatched here because if it were not, there
+          would be a crossing with $x$ and $y$.
+      \end{itemize}
+  \end{itemize}
+
+  \note {
+    It's important to note that, in general, we {\it don't know} if $x_i$ is
+    aligned with $y_j$, but {\it if} we knew the solutions to all the
+    sub-problems, we {\it would} know.
+  }
+
+  In general, we have
+
+  \[
+    \opt(i, j) = \min \{
+        \alpha_{x_i, y_j} + \opt(i - 1, j - 1),
+        \delta + \opt(i - 1, j),
+        \delta + \opt(i, j - 1)
+    \}
+  \]
+
+  Which is just the minimum of the three scenarios above.
+
+  {\bf Initial Conditions}: $\opt(i, 0) = i \cdot \delta$, and $\opt(0, j) = j
+  \cdot \delta$.
+
+  If we're comparing index $k$ of one string to index $0$ of the other, the best
+  possible scenario is to offset the string by $k$ spaces, which costs $k \cdot
+  \delta$.
+
+  \subsubsection{Pseudocode}
+
+  \begin{lstlisting}
+Align(x, y):
+  let $A$ be an $(n + 1) \times (m + 1)$ array indexed by
+  $i \in \{0, 1, \dots, n\}$ and $j \in \{0, 1, \dots, m\}$
+
+  $A[i, 0] = i \cdot \delta$ for all $i \in \{1, \dots, n\}$
+  $A[0, j] = j \cdot \delta$ for all $j \in \{1, \dots, m\}$
+
+  for i = 1 to n:
+    for j = 1 to m:
+      $A[i, j] = \min \{
+        \alpha_{x_i, y_j} + A[i - 1, j - 1],
+        \delta + A[i - 1, j],
+        \delta + A[i, j - 1]
+      \}$
+    end
+  end
+
+  return $A[n, m]$
+end
+  \end{lstlisting}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  \subsection{Shortest Paths in Graphs with Negative Weights}
+
+  {\it Note that just doing Dijkstra'a algorithm wont work here, you also can't
+  just offset the weights by the most negative weight.}
+
+\end{document}
