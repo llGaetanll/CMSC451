@@ -1836,6 +1836,56 @@ end
   multiplication, which is also divide and conquer. This algorithm was still
   $\O(n^2)$, but just had a better constant term.
 
+  \subsubsection{Pseudocode}
+
+  \begin{lstlisting}
+MergeSort($L$):
+  # get the size of the list
+  let $n$ = $|L|$
+
+  # the list is length $1$ or less
+  if $n \le 1$:
+    return $L$
+
+  # get the lower midpoint of the list
+  let $m$ = $\lfloor n / 2 \rfloor$
+
+  # get the sorted left and right sublists
+  let $l$ = MergeSort($L$[$0$ to $m$])
+  let $r$ = MergeSort($L$[$m$ to $n$])
+
+  return Merge($l$, $r$)
+end
+  \end{lstlisting}
+
+  Where $L$ is our list, and \texttt{Merge} is defined as
+
+  \begin{lstlisting}
+Merge($l$, $r$):
+  let $S$ = []
+  let $i = j = 0$
+
+  while $i < |l|$ and $j < |r|$:
+    if $l$[$i$] $\le$ $r$[$j$]:
+      $S$.push($l$[$i$])
+      $i$++
+    else:
+      $S$.push($r$[$j$])
+      $j$++
+
+  # in case the two lists aren't the same size
+  # only one of these loops will be entered
+  while $i < |l|$:
+      $S$.push($l$[$i$])
+      $i$++
+  while $j < |r|$:
+      $S$.push($r$[$j$])
+      $j$++
+
+  return $S$
+end
+  \end{lstlisting}
+
   \subsection{Closest Points}
 
   Suppose we have $n$ points in in the plane, and we want to find the two closest
@@ -2816,9 +2866,10 @@ end
 
   \subsubsection{Approaches}
 
-  TO solve the problem, we could think of modifying Dijkstra's algorithm in some
+  To solve the problem, we could think of modifying Dijkstra's algorithm in some
   way. Unfortunately we can see that this does not work. Having negative edge
-  weight, you can't simply consider ``one more edge". Let's look at an example
+  weights means you can't simply consider ``one more edge". Let's look at an
+  example.
 
   \example {
     In the following graph, the shortest path from $s$ to $v$ is not obvious. We
@@ -2865,18 +2916,26 @@ end
       $i$ edges, so the solution should be the same using one less edge.
 
     \item {\bf Yes}: Then $\opt(i, v) = \min_{u \in V}\big(\opt(i - 1, u) +
-      c_{vu}\big)$.
+      c_{uv}\big)$.
 
-      Here we consider the optimal way to get to a neighbor of $v$, and then
-      look for the best way to get from that neighbor to $u$.
+      Here we consider the optimal way to get to a neighbor $u$ of $v$, and then
+      look for the best way to get from $u$ to $v$.
   \end{itemize}
 
 
   {\bf Initial Conditions}
 
   \begin{itemize}
-    \item $\opt(0, t) = 0$
-    \item $\opt(0, v) = \infty$ for all $v \ne t$
+    \item $\opt(0, t) = 0$.
+
+      $t$ is our {\it target} vertex, it's also right where we happen to be, so
+      the cost to get to it is $0$.
+
+    \item $\opt(0, v) = \infty$ for all $v \ne t$.
+
+      If you want to get to any vertex other than $t$ in at most $0$ edges, you
+      can't.
+
   \end{itemize}
 
   {\bf Goal}: Compute the shortest path from $s$ to $t$ using {\it at most} $n -
