@@ -1,26 +1,56 @@
 \documentclass[12pt]{article}
 
 \usepackage[
-    top=5mm,
-    bottom=5mm,
-    left=5mm,
-    right=5mm,
-    marginparwidth=0mm,
-    marginparsep=0mm,
-    headheight=15pt,
-    centering,
-    includefoot,
-    includehead
+  top=5mm,
+  bottom=5mm,
+  left=5mm,
+  right=5mm,
+  marginparwidth=0mm,
+  marginparsep=0mm,
+  headheight=15pt,
+  centering,
+  includefoot,
+  includehead
 ]{geometry}
 \usepackage{multicol}
 \usepackage{tabularx}
-\usepackage{circuitikz}
 
 % preamble
 \input{preamble}
 
 \newcommand{\Mod}[1]{\ (\mathrm{mod}\ #1)}
 \def\opt{\text{opt}}
+
+%%% TIKZ
+\usepackage{circuitikz}
+
+\usetikzlibrary{positioning}
+\usetikzlibrary{arrows}
+\usetikzlibrary {fit}
+
+% colors
+\definecolor{darkgreen}{RGB}{0,100,0}
+\definecolor{darkblue}{HTML}{3943b7}
+\definecolor{darkred}{HTML}{ff6b6b}
+
+\tikzset {
+  node distance={2.5cm},
+  % circled vertex style
+  main/.style = {draw, circle, outer sep=2mm},
+  % source and sink vertices
+  source/.style={draw=darkgreen!80, fill=green!20, very thick},
+  sink/.style={draw=red!80, fill=red!30, very thick},
+  % this is for edges that are part of a flow
+  selected/.style={darkblue, ultra thick},
+  % Residual Networks
+  forwards/.style={darkgreen, very thick},
+  backwards/.style={darkred, very thick},
+  mid/.style={midway, fill=white}
+}
+
+\newcommand{\fc}[2]{
+  \blue{#1}/\red{#2}
+}
 
 \begin{document}
 
@@ -2520,11 +2550,177 @@ end
 
   \subsection{Knapsack}
 
-  \TODO{} Take notes for that lecture (last one before break)
+  \btw {
+    In general, when doing dynamic programming, we want to express the solution
+    in terms of a recurrence.
 
-  \sidenote {
-    Homework 3 is due soon?
+    To be efficient, we need
+
+    \begin{itemize}
+      \item polynomially many sub-problems. Since we end up solving all
+        sub-problems, we better not have too many.
+      \item the solution of a problem should be efficiently computable from the
+        solutions of its sub-problems.
+      \item to be able to express the solution in terms of a recurrence involving
+        only ``smaller" sub-problems
+    \end{itemize}
+
+    \note {
+      The sub-problems should form a DAG. If it does, then there is a topological
+      ordering in which the sub-problems can be computed so that we always have
+      the information needed to do the next evaluation.
+    }
   }
+
+  {\bf Constraints}
+
+  We are given $n$ items, where item $i$ has a positive integer weight $w_i \in
+  \Z^+$ for all $1 \le i \le n$, an upper bound $W \in \Z^+$ on the total
+  weight.
+
+  {\bf Goal}
+  Find a subset $S \subseteq \{1, \dots, n\}$ that maximizes the total weight
+  $\sum_{i \in S} w_i \le W$.
+
+  \subsubsection{Approach}
+
+  A natural idea in Dynamic Programming is to only consider the first $j$ items.
+  This will be our sub-problems.
+
+  Let $\opt(j)$ be the optimal solution only items $1$ through $j$.
+
+  {\bf Question}: starting from the last item, is item $n$ part of the optimal
+  solution?
+
+  \begin{itemize}
+    \item {\bf No}: Then the problem is identical with or without the item in
+      the list, so we have
+
+      \[
+        \opt(n) = \opt(n - 1)
+      \]
+
+    \item {\bf Yes}:
+      \[
+        \opt(n) = w_n + \opt(n - 1)
+      \]
+
+      But now we don't want to exceed weight $W - n$
+  \end{itemize}
+
+  We made a mistake! This is great because it shows that we did not come up with
+  the right sub-problem. What we realized as we wrote this recurrence was that
+  we needed to capture the weight of the knapsack in the recurrence.
+
+  Let's try that again.
+
+  Let $\opt(j, w)$ be the optimal solution containing only items $1$ through
+  $j$, that adds to a weight less than or equal to $w$. Now we have the
+  following recurrence.
+
+  {\bf Question}: starting from the last item, is item $n$ part of the optimal
+  solution?
+
+  \begin{itemize}
+    \item {\bf No}: Then, like before, the problem is the same as if that item
+      weren't there at all, so we have
+
+      \[
+        \opt(n, w) = \opt(n - 1, w)
+      \]
+
+      And just like before, our backpack is no more full so the weight limit
+      stays the same.
+
+    \item {\bf Yes}: Then we need to consider the weight of the backpack, and we
+      have
+
+      \[
+        \opt(n, w) = w_n + \opt(n - 1, w - w_n)
+      \]
+
+      This time, we remove the last item from the list, {\it and} we make sure
+      to adjust the weight capacity of the backpack.
+
+  \end{itemize}
+
+  {\bf Base Case}:
+
+  If our weight limit is zero, then no matter what set of items we're given, we
+  can't take any.
+
+  \[
+    \opt(k, 0) = 0 \text{ for any $1 \le k \le n$}
+  \]
+
+  \note {
+    We'll see that we don't actually need the base case above, due to the order
+    in which we will fill our memo.
+  }
+
+  Now if $k = 0$, there's no items to take from, so similarly, no matter the
+  weight limit
+
+  \[
+    \opt(0, w) = 0 \text{ for any weight $w$}
+  \]
+
+  {\bf Recurrence}
+
+  If the $j$th item is too heavy for our backpack, we don't consider it.
+  Otherwise, we check for the max between taking item $j$, and not taking it.
+  More formally
+
+  \[
+    \opt(j, w) = \begin{cases}
+      \opt(j - 1, w) & \text{ if $w_j > w$} \\
+      \max \big\{ \opt(j - 1, w), w_j + \opt(j - 1, w - w_j)\big\} &\text{otherwise}
+    \end{cases}
+  \]
+
+  Notice that although this recurrence describes the algorithm, it does not
+  describe the order in which to iterate the loop so that all current computed
+  values pull from already defined results.
+
+  \subsubsection{Pseudocode}
+
+  \begin{lstlisting}
+Knapsack(n, W):
+  # we add 1 because we run from 0 items and 0 weights
+  let $M$ be an $(n + 1) \times (W + 1)$ array of integers
+
+  # set our base case
+  let $M$[0][w] = 0 for all $w$ from 0 to $W$
+
+  for j = 1 to n:
+    for w = 0 to W:
+      if w_j > w:
+        M[j][w] = M[j - 1][w]
+      else:
+        M[j][w] = max(M[j - 1][w], w_j + M[j - 1][w - w_j])
+      end
+    end
+  end
+
+  return M[n][W]
+end
+  \end{lstlisting}
+
+  This algorithm is correct because it evaluates the recurrence above.
+
+  \subsubsection{Running Time}
+
+  The running time is $\O(n \cdot W)$ since the body of the loop takes constant
+  time.
+
+  It's linear in $n$, and exponential in $\log(W)$. This is known as a
+  pseudo-polynomial time algorithm.
+
+
+
+
+
+
 
   \subsection{Sequence Alignment}
 
@@ -2992,17 +3188,785 @@ end
   lower and lower bounds for the path. At some point we can stop, but how do we
   know if there is one?
 
+  Bellman-Ford will find a negative cycle if one exists, provided that
+
+  \begin{enumerate}
+    \item there is a path from the cycle to $t$, where we're trying to go
+    \item it runs long enough to see the cycle.
+
+      \note {
+        This is not necessarily the case: what if the whole graph is one big
+        cycle? Then you'll never figure this out because you'll get to your
+        destination before noticing the cycle.
+      }
+
+  \end{enumerate}
+
+  \Lemma {
+    For any directed graph $G$, there exists a digraph $G'$ with {\it one more}
+    vertex than $G$ such that $G'$ has a path from a negative cycle to $t$, if
+    and only if $G$ has a negative cycle.
+  }
+  {
+    {\it This proof isn't formal, but let's describe the main idea.}
+
+    You have some graph $G$. Create a new vertex $t$, and add an edge from all
+    the vertices in $G$, to this new vertex $t$.
+
+    Now if there was a negative cycle in $G$, its {\it definitely} connected to
+    $t$.
+  }
+
+  This solves the first of the two problems. Now we need to make sure that our
+  algorithm can see the cycle, provided that there is one.
+
+  Remember when we considered that the whole graph was one big cycle? Well we
+  only needed to run Bellman-Ford one more time (on all $n$ edges instead of $n
+  - 1$) to notice that we're in a cycle. It turns out that this is completely
+  generic, and will always work.
+
+  \Lemma {
+    A digraph has no negative-weight cycles {\bf if and only if} $\opt(n - 1, v)
+    = \opt(n, v)$ for all vertices $v$.
+
+    {\it here, $n$ is the number of vertices in $G'$, not $G$.}
+
+    In other words, we add {\it one more} row to the memo. If the last row is
+    the same as the second to last row, then there are no negative cycles. If it
+    {\it is} different, then there {\it is} a negative cycle.
+  }
+  {
+    If there are no negative weight cycles, then this follows from the
+    correctness of Bellman-Ford (the result of one more search should not
+    change.)
+
+    Conversely, if it is the case that $\opt(n - 1, v) = \opt(n, v)$ for all
+    vertices $v$, then by induction, it {\it must} be the case that $\opt(n, v)
+    = \opt(k, v)$ for all $k \ge n - 1$.
+
+    However, if there were a negative cycle, then $\opt(k, v)$ could become
+    arbitrarily small (because you could just go around the cycle as many times
+    as you'd like.)
+
+    {\it But you don't need to go around the cycle a million times to see if
+    there is a cycle! You just need one more iteration of Bellman-Ford, and you
+    check if things have changed.}
+  }
 
 
+  {\bf Why did we add the vertex $t$?}
 
-
-
-
+  Well remember that we always want to get to $t$. So we created a graph that
+  you can reach from all vertices. By making sure we create such a graph, we
+  make sure that Bellman-Ford will always explore the whole graph to check what
+  the best way to get to $t$ is.
 
 
 
   \newpage
-
   \section{Network Flow}
+
+  \btw {
+    We're still talking about graph algorithms, but ultimately, this is a new
+    style of algorithm.
+
+    We're going to try to find augmenting paths in graphs. This is a really
+    powerful algorithmic idea, and sometimes it's not obvious where it might
+    show up.
+  }
+
+  \Definition{Flow Network}
+  {
+    We're going to have this notion of a {\bf flow network}. This is a digraph
+    $G = (V, E)$ with
+
+    \begin{itemize}
+      \item A designated {\bf source} vertex $s \in V$. This is a vertex with no
+        edges pointing into it.
+
+        \[
+          \indeg(s) = 0
+        \]
+
+      \item A designated {\bf sink} vertex $t \in V$. This is a vertex with
+        nothing coming out of it.
+
+        \[
+          \outdeg(t) = 0
+        \]
+
+      \item A {\bf capacity} $C_e \ge 0$ for all edges $e \in E$.
+
+        These are essentially the weights of the edges. We also assume that they
+        are {\bf integers}.
+
+    \end{itemize}
+  }
+
+  For the problem that we're considering, there is only one sink and one
+  source. Generally, there's no reason why we couldn't have multiple vertices
+  with in-degree $0$, or out-degree $0$.
+
+  Let's look at an example flow network.
+
+  \example {
+    \begin{center}
+      \begin{tikzpicture} 
+        \node[main] (v) {$v$};
+        \node[main, source] (s) [below left of=v] {$s$};
+        \node[main, sink] (t) [below right of=v] {$t$};
+
+        \draw [->] (s) -- node[above left] {1} (v);
+        \draw [->] (v) -- node[above right] {2} (t);
+        \draw [->] (s) -- node[below] {3} (t);
+      \end{tikzpicture}
+    \end{center}
+  }
+
+  \Definition {Flow} {
+    A {\bf flow} is a function $f: E \to \R^+$ satisfying
+
+    \begin{itemize}
+      \item {\bf Capacity} conditions $0 \le f(c) \le C_e$ for all $e \in E$
+
+        {\it An edge can't pump more liquid than its $C_e$ value}.
+
+      \item {\bf Conservation} conditions.
+
+        \[
+          f^\text{in} (v) = f^\text{out} (v)
+        \]
+
+        For all vertices $v$, {\bf except the source $s$ and sink $t$}.
+
+        {\it An edge transfers as much flow as is sent into it}.
+    \end{itemize}
+
+    Here, $f^\text{in} (v)$ is the sum of all the flows going into $v$, and
+    $f^\text{out}(v)$ is the sum of the flows going out of $v$.
+
+    \[
+      f^\text{in} (v) = \sum_{e \text{ into } v} f(e)
+    \]
+
+    \[
+      f^\text{out} (v) = \sum_{e \text{ out of } v} f(e)
+    \]
+  }
+
+  \subsection{Flow Examples}
+
+  Let's look at an example of a flow.
+
+  \example {
+    This is a flow that satisfies the conditions above.
+
+    \begin{center}
+      \begin{tikzpicture}
+
+        \node[main] (v) {$v$};
+        \node[main, source] (s) [below left of=v] {$s$};
+        \node[main, sink] (t) [below right of=v] {$t$};
+
+        \draw [->] (s) -- node[above left] {\fc{1}{1}} (v);
+        \draw [->] (v) -- node[above right] {\fc{1}{2}} (t);
+        \draw [->] (s) -- node[below] {\fc{1}{3}} (t);
+      \end{tikzpicture}
+    \end{center}
+  }
+
+  The edge weights are represented as
+
+  \begin{center}
+    \fc{flow value}{capacity}
+  \end{center}
+
+  Note that this was not the best flow!
+
+  \example {
+    This is.
+
+    \begin{center}
+      \begin{tikzpicture}
+        \node[main] (2) {$v$};
+        \node[main, source] (1) [below left of=2] {$s$};
+        \node[main, sink] (3) [below right of=2] {$t$};
+
+        \draw [->] (1) -- node[above left] {\fc{1}{1}} (2);
+        \draw [->] (2) -- node[above right] {\fc{1}{2}} (3);
+        \draw [->] (1) -- node[below] {\fc{3}{3}} (3);
+      \end{tikzpicture}
+    \end{center}
+
+    Notice that the edge from $v$ to $t$ is still at flow value $1$, even if it
+    can handle $2$. That's because only $1$ is coming into it.
+  }
+
+  We'll spend a lot of time trying to find the best possible flow of these
+  graphs.
+
+  \subsection{Invalid Flow Examples}
+
+  Notice that there are also {\it invalid flows}.
+
+  \example {
+    \begin{center}
+      \begin{tikzpicture}
+        \node[main] (2) {$v$};
+        \node[main, source] (1) [below left of=2] {$s$};
+        \node[main, sink] (3) [below right of=2] {$t$};
+
+        \draw [->] (1) -- node[above left] {\fc{2}{1}} (2);
+        \draw [->] (2) -- node[above right] {\fc{2}{2}} (3);
+        \draw [->] (1) -- node[below] {\fc{2}{3}} (3);
+      \end{tikzpicture}
+    \end{center}
+
+    The graph above is wrong because it doesn't respect the {\bf capacity} constraint.
+
+    \begin{center}
+      \begin{tikzpicture}
+        \node[main] (2) {$v$};
+        \node[main, source] (1) [below left of=2] {$s$};
+        \node[main, sink] (3) [below right of=2] {$t$};
+
+        \draw [->] (1) -- node[above left] {\fc{1}{1}} (2);
+        \draw [->] (2) -- node[above right] {\fc{2}{2}} (3);
+        \draw [->] (1) -- node[below] {\fc{2}{3}} (3);
+      \end{tikzpicture}
+    \end{center}
+
+    The graph above is wrong because it doesn't respect the {\bf conservation}
+    constraint.
+  }
+
+  \Definition{} {
+    The {\bf value} of a flow $v(f) = f^\text{out}(s)$ is the total flow that's
+    leaving $s$.
+  }
+
+  \subsection{Finding a maximum flow}
+
+  What happens if we try to be greedy? Spoiler alert: it won't work. Let's see
+  why.
+
+  Here's the strategy:
+
+  \begin{enumerate}
+    \item Find an $s \to t$ path (using your favorite path finding algorithm)
+    \item Send as much flow along it as possible.
+  \end{enumerate}
+  
+  Consider the following flow generated by the greedy rule.
+
+  \begin{center}
+    \begin{tikzpicture}
+      \node[main] (u) {$u$};
+      \node[main, source] (s) [below left of=u] {$s$};
+      \node[main, sink] (t) [below right of=u] {$t$};
+      \node[main] (v) [below left of=3] {$v$};
+
+      \draw [->, selected] (s) -- node[above left] {2} (u);
+      \draw [->] (u) -- node[above right] {1} (t);
+      \draw [->] (s) -- node[below left] {1} (v);
+      \draw [->, selected] (v) -- node[below right] {2} (t);
+      \draw [->, selected] (u) -- node[right] {3} (v);
+    \end{tikzpicture}
+  \end{center}
+
+  We can be more precise, here are the flow / capacities.
+
+  \begin{center}
+    \begin{tikzpicture}
+      \node[main] (u) {$u$};
+      \node[main, source] (s) [below left of=u] {$s$};
+      \node[main, sink] (t) [below right of=u] {$t$};
+      \node[main] (v) [below left of=3] {$v$};
+
+      \draw [->, selected] (s) -- node[above left] {\fc{2}{2}} (u);
+      \draw [->] (u) -- node[above right] {\fc{0}{1}} (t);
+      \draw [->] (s) -- node[below left] {\fc{0}{1}} (v);
+      \draw [->, selected] (v) -- node[below right] {\fc{2}{2}} (t);
+      \draw [->, selected] (u) -- node[right] {\fc{2}{3}} (v);
+    \end{tikzpicture}
+  \end{center}
+
+  We get that the flow value at our sink $t$ is 2. But notice that we're not
+  using edges $s \to v$ or $u \to t$. Here's a better flow instead.
+
+  \begin{center}
+    \begin{tikzpicture}
+      \node[main] (u) {$u$};
+      \node[main, source] (s) [below left of=u] {$s$};
+      \node[main, sink] (t) [below right of=u] {$t$};
+      \node[main] (v) [below left of=3] {$v$};
+
+      \draw [->, selected] (s) -- node[above left] {\fc{2}{2}} (u);
+      \draw [->, selected] (u) -- node[above right] {\fc{1}{1}} (t);
+      \draw [->, selected] (s) -- node[below left] {\fc{1}{1}} (v);
+      \draw [->, selected] (v) -- node[below right] {\fc{2}{2}} (t);
+      \draw [->, selected] (u) -- node[right] {\fc{1}{3}} (v);
+    \end{tikzpicture}
+  \end{center}
+
+  Doing this, we still respect the capacity and conservation conditions, and
+  we get a flow value of 3 at our sink. This should convince you that the greedy
+  approach is sub-optimal.
+
+
+  This is great and all but how did we come up with this better example?
+  We want a general way to send as much flow as possible from $s$ to $t$ that
+  will work in general. The general strategy that we'll use to do this stems
+  from a simple idea. We'll allow ourselves to not only send flow forward along
+  an edge, but also backwards. Sending flow backwards along an edge is analogous
+  to decreasing the flow in the forward direction.
+
+  It should make sense that we should only allow ourselves to do this for edges
+  that have flow in the forwards direction to begin with.
+
+  \subsection{Residual Networks}
+
+  To get around this issue, we're going to consider forward edges and backward
+  edges in {\bf residual networks}.
+
+  \Definition {Residual Network} {
+    Given a flow network and a flow $f$, their {\bf residual flow network} works as
+    follows
+
+    \begin{itemize}
+      \item The vertices are those of the original flow network.
+
+      \item {\bf Forward Edges}: For each edge $e$ with $f(e) < C_e$, include
+        the edge $e$ with capacity $C_e - f(e)$.
+
+        In this case, we're not using $e$ to its full capacity. 
+
+      \item {\bf Backward Edges}: For each edge $e = (u, v)$ with positive flow
+        value $f(e) > 0$, include the edge $(v, u)$ with capacity $f(e)$.
+
+        We should allow ourselves to decrease the flow along $e$ by at most
+        $f(e)$.
+    \end{itemize}
+  }
+
+  \note {
+    A Residual Flow Network is {\bf only} defined for a {\it particular flow!}
+  }
+
+  We want to send as much flow from the start to the destination. 
+
+  The residual flow network ``flows backwards through the graph".
+
+  Let's look at an example
+
+  \example {
+    Consider the following flow network.
+
+    \begin{center}
+      \begin{tikzpicture}
+        \begin{scope}[xshift=-5cm]
+          \node[main] (u) {$u$};
+          \node[main, source] (s) [below left of=u] {$s$};
+          \node[main, sink] (t) [below right of=u] {$t$};
+          \node[main] (v) [below left of=t] {$v$};
+
+          \draw [->, selected] (s) -- node[mid] {2} (u);
+          \draw [->] (u) -- node[mid] {1} (t);
+          \draw [->] (s) -- node[mid] {1} (v);
+          \draw [->, selected] (v) -- node[mid] {2} (t);
+          \draw [->, selected] (u) -- node[mid] {3} (v);
+        \end{scope}
+
+        \begin{scope}[xshift=5cm]
+          \node[main] (_u) {$u$};
+          \node[main, source] (_s) [below left of=_u] {$s$};
+          \node[main, sink] (_t) [below right of=_u] {$t$};
+          \node[main] (_v) [below left of=_t] {$v$};
+
+          \draw [->, selected] (_s) -- node[above left] {\fc{2}{2}} (_u);
+          \draw [->] (_u) -- node[above right] {\fc{0}{1}} (_t);
+          \draw [->] (_s) -- node[below left] {\fc{0}{1}} (_v);
+          \draw [->, selected] (_v) -- node[below right] {\fc{2}{2}} (_t);
+          \draw [->, selected] (_u) -- node[mid] {\fc{2}{3}} (_v);
+        \end{scope}
+
+        \draw [->, above, yshift=-1.8cm] (-1.5,0) -- node[above] {Flow Capacity} (1.5,0);
+      \end{tikzpicture}
+    \end{center}
+
+    Let's construct the residual network of this particular flow using the
+    rules from the last lecture.
+
+    \begin{center}
+      \begin{tikzpicture}[
+        node distance={3.5cm},
+      ]
+        \begin{scope}[xshift=-5cm]
+          \node[main] (u) at (0, 0) {$u$};
+          \node[main] (v) at (0, -5) {$v$};
+          \node[main, source] at (-3, -2.5) (s) {$s$};
+          \node[main, sink] (t) at (3, -2.5) {$t$};
+
+          \draw [<-, backwards] (s) to[bend left=15] node[mid] {2} (u);
+          \draw [->, forwards] (s) to[bend right=15] node[mid] {0} (u);
+
+          \draw [<-, backwards] (s) to[bend left=15] node[mid] {0} (v);
+          \draw [->, forwards] (s) to[bend right=15] node[mid] {1} (v);
+
+          \draw [<-, backwards] (u) to[bend left=15] node[mid] {2} (v);
+          \draw [->, forwards] (u) to[bend right=15] node[mid] {1} (v);
+
+          \draw [<-, backwards] (u) to[bend left=15] node[mid] {0} (t);
+          \draw [->, forwards] (u) to[bend right=15] node[mid] {1} (t);
+
+          \draw [<-, backwards] (v) to[bend left=15] node[mid] {2} (t);
+          \draw [->, forwards] (v) to[bend right=15] node[mid] {0} (t);
+        \end{scope}
+
+        \begin{scope}[xshift=5cm]
+          \node[main] (u) at (0, 0) {$u$};
+          \node[main] (v) at (0, -5) {$v$};
+          \node[main, source] at (-3, -2.5) (s) {$s$};
+          \node[main, sink] (t) at (3, -2.5) {$t$};
+
+          \draw [<-, backwards] (s) to node[mid] {2} (u);
+
+          \draw [->, forwards] (s) to node[mid] {1} (v);
+
+          \draw [<-, backwards] (u) to[bend left=15] node[mid] {2} (v);
+          \draw [->, forwards] (u) to[bend right=15] node[mid] {1} (v);
+
+          \draw [->, forwards] (u) to node[mid] {1} (t);
+
+          \draw [<-, backwards] (v) to node[mid] {2} (t);
+        \end{scope}
+
+        \draw[implies-implies, double equal sign distance, thick] (-1, -2.5)
+          -- (1, -2.5);
+      \end{tikzpicture}
+    \end{center}
+
+    Now, we can use the residual network to send the following flow
+
+    \begin{center}
+      \begin{tikzpicture}
+        \node[main] (u) at (0, 0) {$u$};
+        \node[main] (v) at (0, -5) {$v$};
+        \node[main, source] at (-3, -2.5) (s) {$s$};
+        \node[main, sink] (t) at (3, -2.5) {$t$};
+
+        \draw [<-] (s) to node[mid] {2} (u);
+
+        \draw [->, selected] (s) to node[mid] {\fc{1}{1}} (v);
+
+        \draw [<-, selected] (u) to[bend left=15] node[mid] {\fc{1}{2}} (v);
+        \draw [->] (u) to[bend right=15] node[mid] {1} (v);
+
+        \draw [->, selected] (u) to node[mid] {\fc{1}{1}} (t);
+
+        \draw [<-] (v) to node[mid] {2} (t);
+      \end{tikzpicture}
+    \end{center}
+
+    What we've done here is that we've {\bf augmented} the flow! We used the
+    residual network of our original flow and found a flow that we could send
+    through it that we can now use to update our original flow.
+
+    \begin{center}
+      \begin{tikzpicture}
+        \node[main] (u) {$u$};
+        \node[main, source] (s) [below left of=u] {$s$};
+        \node[main, sink] (t) [below right of=u] {$t$};
+        \node[main] (v) [below left of=3] {$v$};
+
+        \draw [->, selected] (s) -- node[above left] {\fc{2}{2}} (u);
+        \draw [->, selected] (u) -- node[above right] {\fc{1}{1}} (t);
+        \draw [->, selected] (s) -- node[below left] {\fc{1}{1}} (v);
+        \draw [->, selected] (v) -- node[below right] {\fc{2}{2}} (t);
+        \draw [->, selected] (u) -- node[mid] {\fc{1}{3}} (v);
+      \end{tikzpicture}
+    \end{center}
+
+    This is the optimal flow that we found earlier!
+  }
+
+  This is exactly what our algorithm is going to do. We're going to start from
+  zero flow, construct the residual network, send as much flow as possible along
+  some path, augment the flow, construct the new residual network, etc... Until
+  we can't send anymore flow from $s$ to $t$.
+
+  \note {
+    It turns out that this approach is optimal. By repeating this process, we
+    {\it will} find the optimal flow from $s$ to $t$.
+  }
+
+  \Definition {Augmenting Path} {
+    An {\bf Augmenting Path} is a simple path from $s$ to $t$ in the residual
+    network, with positive capacity.
+  }
+
+  \subsection{The Ford-Fulkerson Algorithm}
+
+  Here are the steps we need.
+
+  \begin{enumerate}
+    \item {\bf Find an Augmenting Path.}
+
+      We can do this using BFS or some other path-finding algorithm. It doesn't
+      actually matter if we don't find the {\it best} path from $s$ to $t$
+      here, any path will work.
+
+    \item {\bf Augment the Flow.}
+
+      For a path $P$ and a flow $f$, we let $\text{bottleneck}(P, f)$ be the
+      smallest capacity of any edge on $P$, {\bf in the residual network
+      corresponding to $f$}.
+
+      Let's look at exactly how this works.
+
+      \begin{lstlisting}
+Augment($f$, $P$):
+  # done by walking along the path and
+  # finding the minimum capacity
+  let $b$ = bottleneck($P$, $f$)
+
+  for $e = (u, v)$ along $P$:
+    if $e$ is a forward edge:
+      increase $f(e)$ by $b$
+    else:
+      # $e$ is a backwards edge
+
+      let $e' = (v, u)$
+      decrease $f(e')$ by $b$
+  end
+end
+      \end{lstlisting}
+
+      To figure out if an edge is forwards or backwards, you compare it to the
+      edge from the original flow network. Remember, the graph we pass to
+      \texttt{Augment} is the graph of the residual network, so its edges might
+      differ from the original graph.
+
+      \Lemma {
+        \texttt{Augment($f$, $P$)} produces a valid flow.
+      }
+      {
+        To prove this, we have to prove that \texttt{Augment($f$, $P$)} respects
+        the capacity, and conservation constraints on the original graph.
+
+        {\bf Capacity}
+
+        Suppose $e$ is a forward edge, we increase the flow by $b$, and every edge
+        on $P$ has residual capacity at least $b$ (in other words, every edge along
+        $P$ can still take at least $b$ more flow) so we still satisfy the capacity
+        constraint.
+
+        If $e$ is a backward edge, we decrease the capacity by $b$. Since $b$ is at
+        most $f(e)$, we never decrease the flow by more than the maximum possible,
+        so the resulting flow is non-negative. Again, we satisfy the capacity
+        constraint.
+
+        {\bf Conservation}
+
+        Whenever we add flow into an internal vertex (not the source or the
+        sink), then we add the same flow going out.
+      }
+    
+  \end{enumerate}
+
+  Now we're ready to see the complete algorithm.
+
+  \subsubsection{Algorithm}
+
+  \begin{lstlisting}
+MaxFlow($G$, $C$, $s$, $t$)
+  let $f(e) = 0$ for all edges $e$ of $G$
+
+  while there is a simple path $P$ from $s$ to $t$
+  in the residual network of flow $f$:
+    update $f$ to Augment($f$, $P$)
+    update the residual network to use the new flow
+  end
+
+  return $f$
+end
+  \end{lstlisting}
+
+  Where
+  \begin{itemize}
+    \item $G$ is our graph
+    \item $C$ stores the capacity of each edge
+    \item $s$ is our source vertex
+    \item $t$ is our sink vertex
+  \end{itemize}
+
+  \subsubsection{Proof of Termination}
+
+  How do we know that this algorithm terminates? How do we know that it finds
+  the max flow?
+
+  This is actually quite subtle, this algorithm actually could run indefinitely,
+  {\it if we had not restricted ourselves to integer capacities}.
+
+  \Lemma {
+    The value of the flow strictly increases, at every step of the algorithm.
+  }
+  {
+    The first edge of augmenting path $P$ starts from $s$. The flow along this
+    edge is increased by the bottleneck capacity $b > 0$. Since $P$ is simple,
+    this is the only edge of $P$ that includes $s$. So the value of the flow is
+    increased by $b$.
+  }
+
+  \Lemma {
+    At each step of the algorithm, the flow values and the residual capacities
+    are all integers.
+  }
+  {
+    This just simply follows from the basic fact that $\Z$ is closed addition.
+
+    In other words, if you subtract an integer from an integer, you get an
+    integer. If you add an integer to an integer, you get another integer.
+  }
+
+  From these two lemmas, we get that the flow increases by at least 1 at each
+  step. Since the larger possible flow value is at most
+
+  \[
+    C = \sum_{e} C_e
+  \]
+
+  Where $e$ is an edge leaving $s$.
+
+  This is finite, so we eventually must reach it. Thus the algorithm terminates.
+
+  \note {
+    Although $C$ is the maximum flow, it might not be achievable.
+  }
+
+  \subsubsection{Running Time}
+
+  Additionally, $C$ is an upper bounds for the number of iterations that the
+  algorithm performs.
+
+  Since each pass through the loop can be implemented in time $\O(m + n)$, the
+  overall running time is $\O(C(n + m))$.
+
+  \subsection{Maximum Flows \& Minimal Cuts}
+
+  We saw that $C$ was an upper bound for the maximum flow, but we can find other
+  bounds for the flow by considering various types of {\it cuts}. Recall the
+  definition of a cut: a bipartition of the vertices.
+
+  \Definition {} {
+    We call an cut an $s$-$t$ cut if $s \in A$ and $t \in B$.
+  }
+
+  In a flow network. The capacity of an $s$-$t$ cut is the total capacity of all
+  edges leaving $A$.
+
+  \[
+    C(A, B) = \sum_{e \text{ out of } A} C_e
+  \]
+
+  We only look at the edges that go from the $A$ part of the cut, to the $B$
+  part of the cut.
+
+  \example {
+    Let's look at our example from earlier.
+
+    \begin{center}
+      \begin{tikzpicture}
+        \node[main] (u) {$u$};
+        \node[main, source] (s) [below left of=u] {$s$};
+        \node[main, sink] (t) [below right of=u] {$t$};
+        \node[main] (v) [below left of=3] {$v$};
+
+        \draw [->] (s) -- node[above left] {2} (u);
+        \draw [->] (u) -- node[above right] {1} (t);
+        \draw [->] (s) -- node[below left] {1} (v);
+        \draw [->] (v) -- node[below right] {2} (t);
+        \draw [->] (u) -- node[right] {3} (v);
+      \end{tikzpicture}
+    \end{center}
+
+    We can generate a cut by choosing any subset $A \subset V$ which includes
+    $s$ and doesn't include $t$.
+
+    \begin{center}
+      \begin{tikzpicture}[node distance={2.5cm}, baseline={(current bounding box.center)}]
+        \begin{scope}[xshift=-7.5cm]
+          \node[main] (u) {$u$};
+          \node[main, source] (s) [below left of=u] {$s$};
+          \node[main, sink] (t) [below right of=u] {$t$};
+          \node[main] (v) [below left of=t] {$v$};
+
+          \draw [->] (s) -- node[mid] {2} (u);
+          \draw [->] (u) -- node[mid] {1} (t);
+          \draw [->] (s) -- node[mid] {1} (v);
+          \draw [->] (v) -- node[mid] {2} (t);
+          \draw [->] (u) -- node[mid] {3} (v);
+
+          \draw[draw=gray, dashed, very thick] (s) circle (0.8);
+
+          \node at (0, -5) [align=center] {$A = \{s\}$ \\ Capacity $3$};
+        \end{scope}
+
+        \begin{scope}[xshift=-2.5cm]
+          \node[main] (u) {$u$};
+          \node[main, source] (s) [below left of=u] {$s$};
+          \node[main, sink] (t) [below right of=u] {$t$};
+          \node[main] (v) [below left of=t] {$v$};
+
+          \draw [->] (s) -- node[mid] {2} (u);
+          \draw [->] (u) -- node[mid] {1} (t);
+          \draw [->] (s) -- node[mid] {1} (v);
+          \draw [->] (v) -- node[mid] {2} (t);
+          \draw [->] (u) -- node[mid] {3} (v);
+
+          \node [draw=gray, dashed, very thick, fit=(s)(u)(v)] {};
+
+          \node at (0, -5) [align=center] {$A = \{s, u, v\}$ \\ Capacity $3$};
+        \end{scope}
+
+        \begin{scope}[xshift=2.5cm]
+          \node[main] (u) {$u$};
+          \node[main, source] (s) [below left of=u] {$s$};
+          \node[main, sink] (t) [below right of=u] {$t$};
+          \node[main] (v) [below left of=t] {$v$};
+
+          \draw [->] (s) -- node[mid] {2} (u);
+          \draw [->] (u) -- node[mid] {1} (t);
+          \draw [->] (s) -- node[mid] {1} (v);
+          \draw [->] (v) -- node[mid] {2} (t);
+          \draw [->] (u) -- node[mid] {3} (v);
+
+          \node [draw=gray, dashed, very thick, rotate fit=45, fit=(s)(u)] {};
+
+          \node at (0, -5) [align=center] {$A = \{s, u\}$ \\ Capacity $5$};
+        \end{scope}
+
+        \begin{scope}[xshift=7.5cm]
+          \node[main] (u) {$u$};
+          \node[main, source] (s) [below left of=u] {$s$};
+          \node[main, sink] (t) [below right of=u] {$t$};
+          \node[main] (v) [below left of=t] {$v$};
+
+          \draw [->] (s) -- node[mid] {2} (u);
+          \draw [->] (u) -- node[mid] {1} (t);
+          \draw [->] (s) -- node[mid] {1} (v);
+          \draw [->] (v) -- node[mid] {2} (t);
+          \draw [->] (u) -- node[mid] {3} (v);
+
+          \node [draw=gray, dashed, very thick, rotate fit=45, fit=(s)(v)] {};
+
+          \node at (0, -5) [align=center] {$A = \{s, v\}$ \\ Capacity $4$};
+        \end{scope}
+      \end{tikzpicture}
+    \end{center}
+  }
+
+  What we'll show next time is that the capacities of these cuts will give us
+  upper bounds on the flow value.
 
 \end{document}

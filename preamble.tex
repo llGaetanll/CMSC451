@@ -392,9 +392,9 @@
 
 
 % graphs
-\def\deg{\texttt{deg}}
-\def\indeg{\texttt{indeg}}
-\def\outdeg{\texttt{outdeg}}
+\def\deg{\text{deg}}
+\def\indeg{\text{indeg}}
+\def\outdeg{\text{outdeg}}
 
 % big O notation
 \def\O{\mathcal O}
@@ -402,8 +402,16 @@
 % define parent
 \def\pr{\text{pr}}
 
+\newcommand{\blue}[1]{
+\color{blue} #1 \color{black}
+}
+
+\newcommand{\red}[1]{
+\color{red} #1 \color{black}
+}
+
 % define incomplete commands
-\def\TODO{\color{red}\textbf{TODO}\color{black}\,}
+\def\TODO{\red{\textbf{TODO}}}
 \def\QUESTION{\color{red}\textbf{QUESTION}\color{black}\,}
 
 
