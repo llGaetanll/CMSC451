@@ -3975,4 +3975,633 @@ end
   What we'll show next time is that the capacities of these cuts will give us
   upper bounds on the flow value.
 
-\end{document}
+  For any $S \subseteq V$, let $f^\text{in}(S) = \sum_{e \text{ into } S} f(e)$,
+  and $f^\text{out}(S) = \sum_{e \text{ out of } S} f(e)$.
+
+  Consider the following examples
+
+  \begin{center}
+    \begin{tikzpicture}
+      \node[main] (v) {$v$};
+      \node[main, source] (s) [below left of=v] {$s$};
+      \node[main, sink] (t) [below right of=v] {$t$};
+
+      \draw [->] (s) -- node[mid] {2} (v);
+      \draw [->] (v) -- node[mid] {2} (t);
+      \draw [->] (s) -- node[mid] {1} (t);
+
+      \node [draw=gray, dashed, very thick, rotate fit=45, fit=(s)(v)] {};
+    \end{tikzpicture}
+
+    This cut has $v(f) = f^\text{out}(A) - f^\text{in}(A) = 3$
+  \end{center}
+
+  \vspace{0.5in}
+
+  \begin{center}
+    \begin{tikzpicture}
+      \node[main] (v) {$v$};
+      \node[main, source] (s) [below left of=v] {$s$};
+      \node[main, sink] (t) [below right of=v] {$t$};
+
+      \draw [->] (s) -- node[mid] {2} (v);
+      \draw [->] (v) -- node[mid] {2} (t);
+      \draw [->] (s) -- node[mid] {1} (t);
+
+      \node [draw=gray, dashed, very thick, fit=(s)] {};
+    \end{tikzpicture}
+
+    This cut also has $v(f) = f^\text{out}(A) - f^\text{in}(A) = 3$
+  \end{center}
+
+  We'll show that this always holds.
+
+  \Lemma {
+    Let $f$ be any $s$-$t$ cut flow, and let $(A, B)$ be any $s$-$t$ cut. Then
+    $v(f) = f^\text{out}(A) - f^\text{in}(A)$.
+  }
+  {
+    By definition, $v(f) =  f^\text{out}(S) - f^\text{in}(S) = f^\text{out}(S)$
+    since $f^\text{in}(S) = 0$. For any internal vertex $v$. But recall that for
+    any vertex $v$
+
+    \[
+      f^\text{out}(v) - f^\text{in}(v) = 0
+    \]
+
+    But $v(f) = \sum_{v \in A} (f^\text{out}(v) - f^\text{in}(v))$. Now there
+    are three cases
+
+    \begin{itemize}
+      \item If $e$ has both ends in $A$, it has a net zero contribution.
+      \item If $e$ goes out of $A$, only the plus term has any contribution.
+      \item If $e$ goes into $A$, only the minus term has any contribution.
+    \end{itemize}
+
+    This implies that $v(f) = f^\text{out}(A) - f^\text{in}(A)$.
+  }
+
+  \Lemma {
+    Let $f$ be any $s$-$t$ flow, and let $(A, B)$ be any $s$-$t$ cut.
+
+    {\bf Claim}. $v(f) \le c(A, B)$
+  }
+  {
+    We know from the previous lemma that
+
+    \begin{align*}
+      v(f) =&f^\text{out}(A) - f^\text{in}(A) \\
+         \le&f^\text{out}(A) \\
+           =& \sum_{e \text{ out of } A} f(e) \\
+           \le&\sum_{e \text{ out of } A} C_e \\
+           =&c(A, B)
+    \end{align*}
+  }
+
+  Now if we vary over all possible cuts, we get a many of upper bounds. What
+  we'll show is that, as we vary over all possible cuts and consider all these
+  upper bounds, the minimum such upper bound will be {\it equal} to the maximum
+  flow that we can push!
+
+  
+
+  \NamedTheorem {\subsection{Max-Flow Min Cut Theorem}}
+  {
+    For any flow network, the largest value of any flow {\it is} the minimum
+    capacity of any cut.
+  }
+  {
+    Let $f$ be a flow such that there is no $s$-$t$ path in its residual flow
+    network.
+
+    \btw {
+      We know that such a flow exists because the Ford-Fulkerson algorithm will
+      produce such a flow, in fact there might be multiple such flows.
+    }
+
+    Let $A$ be the set of vertices $v$ with an $s$-$v$ path in the residual
+    network of $A$. Let $B = V \setminus A$.
+
+    {\bf Claim}
+    \[
+      v(f) = c(A, B)
+    \]
+
+    Then, the theorem will follow since, by the lemma, the maximum flow $f$ is
+    less than or equal to the minimum $c(A', B')$ for all cuts $(A', B')$.
+
+    \begin{itemize}
+      \item Why is $(A, B)$ an $s$-$t$ cut?
+
+        Clearly, $s \in A$, additionally, there does not exist an $s$-$t$ path
+        in the residual network, so $t$ must be in $B$.
+
+      \item How do the flows relate to the capacities?
+
+        Let's first consider an edge $e = (u, v)$ where $u \in A$, and $v \in
+        B$.
+
+        It must be the case that the flow along that edge is equal to its
+        capacity. If it were not, then $e$ would have a forward edge in the
+        residual network. If this were the case, you could make a path from $s$
+        to $v$ and so $v$ should be in $A$.
+
+        \QUESTION{} Why could you make a path from $v$ to $s$ though?
+
+        Secondly, let's consider an edge $e' = (u', v')$ where $u' \in B$, and
+        $v' \in A$.
+
+        If $f(e') > 0$, then $(v', u')$ is a backward edge in the residual
+        network. So the path from $s$ to $v'$ could be extended to an $s$-$u'$
+        path, which is a contradiction. Thus $f(e') = 0$.
+    \end{itemize}
+
+    Therefore
+
+    \begin{align*}
+      v(f) =&f^\text{out}(A) - f^\text{in}(A) \\
+      =&\sum_{e \text{ out of } A} C_e - \sum_{e \text{ into } A} 0 \\
+      =&c(A, B)
+    \end{align*}
+  }
+
+  \subsection{Bipartite Matching}
+
+  Recall that a bipartite graph has a bipartition of the vertices such that all
+  edges have one end in $A$ and the other in $B$.
+
+  What we mean by a matching here is 
+  \Definition {}
+  {
+    A {\bf matching} in $G$ is an edge subset $M \subseteq E$ such that each
+    vertex appears in at most one edge of $M$.
+  }
+
+  We want to find a maximum matching, we're going to use max flow ideas.
+
+  Let's consider the following bipartite graph.
+
+  \begin{center}
+    \begin{tikzpicture}
+      \node[main] (1) at (0, 0) {};
+      \node[main] (2) at (0, -2) {};
+      \node[main] (3) at (0, -4) {};
+      \node[main] (4) at (0, -6) {};
+
+      \node[main] (5) at (2, 0)  {};
+      \node[main] (6) at (2, -2) {};
+      \node[main] (7) at (2, -4) {};
+      \node[main] (8) at (2, -6) {};
+
+      \draw [-] (1) -- (7);
+      \draw [-] (2) -- (6);
+      \draw [-] (3) -- (7);
+      \draw [-] (4) -- (7);
+      \draw [-] (2) -- (5);
+      \draw [-] (3) -- (6);
+      \draw [-] (2) -- (8);
+
+      % \node[main, source] (s) at (-2, -3) {$s$};
+      % \node[main, sink] (t) at (4, -3) {$t$};
+      %
+      % \draw [->] (s) -- (1);
+      % \draw [->] (s) -- (2);
+      % \draw [->] (s) -- (3);
+      % \draw [->] (s) -- (4);
+      % 
+      % \draw [<-] (t) -- (5);
+      % \draw [<-] (t) -- (6);
+      % \draw [<-] (t) -- (7);
+      % \draw [<-] (t) -- (8);
+    \end{tikzpicture}
+  \end{center}
+
+  The maximum matching for this graph is the following.
+
+  \begin{center}
+    \begin{tikzpicture}
+      \node[main] (1) at (0, 0) {};
+      \node[main] (2) at (0, -2) {};
+      \node[main] (3) at (0, -4) {};
+      \node[main] (4) at (0, -6) {};
+
+      \node[main] (5) at (2, 0)  {};
+      \node[main] (6) at (2, -2) {};
+      \node[main] (7) at (2, -4) {};
+      \node[main] (8) at (2, -6) {};
+
+      \draw [-] (1) -- (7);
+      \draw [-] (2) -- (6);
+      \draw [-] (3) -- (7);
+      \draw [-, selected] (4) -- (7);
+      \draw [-, selected] (2) -- (5);
+      \draw [-, selected] (3) -- (6);
+      \draw [-] (2) -- (8);
+
+      % \node[main, source] (s) at (-2, -3) {$s$};
+      % \node[main, sink] (t) at (4, -3) {$t$};
+      %
+      % \draw [->] (s) -- (1);
+      % \draw [->] (s) -- (2);
+      % \draw [->] (s) -- (3);
+      % \draw [->] (s) -- (4);
+      % 
+      % \draw [<-] (t) -- (5);
+      % \draw [<-] (t) -- (6);
+      % \draw [<-] (t) -- (7);
+      % \draw [<-] (t) -- (8);
+    \end{tikzpicture}
+  \end{center}
+
+  We can't add anymore vertices here because if we did, we would be using some
+  vertex twice, which we disallow.
+
+  {\bf Question}: How can we find maximum matchings?
+
+  {\bf Answer}: Network Flow.
+
+  Consider the following network, where the capacity of all edges is one.
+
+  \begin{center}
+      \begin{tikzpicture}
+        \node[main] (1) at (0, 0) {};
+        \node[main] (2) at (0, -2) {};
+        \node[main] (3) at (0, -4) {};
+        \node[main] (4) at (0, -6) {};
+
+        \node[main] (5) at (2, 0)  {};
+        \node[main] (6) at (2, -2) {};
+        \node[main] (7) at (2, -4) {};
+        \node[main] (8) at (2, -6) {};
+
+        \draw [->] (1) -- (7);
+        \draw [->] (2) -- (6);
+        \draw [->] (3) -- (7);
+        \draw [->] (4) -- (7);
+        \draw [->] (2) -- (5);
+        \draw [->] (3) -- (6);
+        \draw [->] (2) -- (8);
+
+        \node[main, source] (s) at (-2, -3) {$s$};
+        \node[main, sink] (t) at (4, -3) {$t$};
+
+        \draw [->] (s) -- (1);
+        \draw [->] (s) -- (2);
+        \draw [->] (s) -- (3);
+        \draw [->] (s) -- (4);
+
+        \draw [<-] (t) -- (5);
+        \draw [<-] (t) -- (6);
+        \draw [<-] (t) -- (7);
+        \draw [<-] (t) -- (8);
+      \end{tikzpicture}
+    \end{center}
+
+    Then, finding the maximum flow on this network is analogous to finding a
+    maximum matching.
+
+    \note {
+      We need to reassert that all flows here are integers values, if they did
+      not, our Ford-Fulkerson algorithm may not be able to find the optimal
+      flow.
+    }
+
+    Let's look at another example.
+
+    \example {
+      Consider the $2 \times 2$ complete bipartite graph.
+
+      \begin{center}
+        \begin{tikzpicture}
+          \node[main] (1) at (0, 0) {};
+          \node[main] (2) at (0, -2) {};
+          \node[main] (3) at (2, 0) {};
+          \node[main] (4) at (2, -2) {};
+
+          \draw [-] (1) -- (3);
+          \draw [-] (1) -- (4);
+          \draw [-] (2) -- (3);
+          \draw [-] (2) -- (4);
+
+          % \node[main, source] (s) at (-2, -1) {$s$};
+          % \node[main, sink] (t) at (4, -1) {$t$};
+          %
+          % \draw [->] (s) -- (1);
+          % \draw [->] (s) -- (2);
+          %
+          % \draw [->] (3) -- (t);
+          % \draw [->] (4) -- (t);
+        \end{tikzpicture}
+      \end{center}
+
+      Suppose all edges have unit capacities, then we can send the following
+      flows.
+
+      \begin{center}
+        \begin{tikzpicture}
+          \node[main] (1) at (0, 0) {};
+          \node[main] (2) at (0, -2) {};
+          \node[main] (3) at (2, 0) {};
+          \node[main] (4) at (2, -2) {};
+
+          \draw [->, selected] (1) -- (3);
+          \draw [->] (1) -- (4);
+          \draw [->] (2) -- (3);
+          \draw [->, selected] (2) -- (4);
+
+          \node[main, source] (s) at (-2, -1) {$s$};
+          \node[main, sink] (t) at (4, -1) {$t$};
+
+          \draw [->, selected] (s) -- (1);
+          \draw [->, selected] (s) -- (2);
+
+          \draw [->, selected] (3) -- (t);
+          \draw [->, selected] (4) -- (t);
+        \end{tikzpicture}
+      \end{center}
+
+      or
+
+      \begin{center}
+        \begin{tikzpicture}
+          \node[main] (1) at (0, 0) {};
+          \node[main] (2) at (0, -2) {};
+          \node[main] (3) at (2, 0) {};
+          \node[main] (4) at (2, -2) {};
+
+          \draw [->] (1) -- (3);
+          \draw [->, selected] (1) -- (4);
+          \draw [->, selected] (2) -- (3);
+          \draw [->] (2) -- (4);
+
+          \node[main, source] (s) at (-2, -1) {$s$};
+          \node[main, sink] (t) at (4, -1) {$t$};
+
+          \draw [->, selected] (s) -- (1);
+          \draw [->, selected] (s) -- (2);
+
+          \draw [->, selected] (3) -- (t);
+          \draw [->, selected] (4) -- (t);
+        \end{tikzpicture}
+      \end{center}
+
+      Both of these correspond to a maximum matching.
+    }
+
+    Let's prove that this always works.
+
+    \Lemma {
+      The size of a max matching in given bipartite graph equals the value of a
+      max flow in the corresponding flow network.
+    }
+    {
+      $\Rightarrow$ \underline{Given a Matching, we can construct a Flow}
+
+      Given a matching $M$, construct a flow by sending $1$ unit of flow for
+      each corresponding edge in the flow network.
+
+      We also send $1$ unit of flow from $s$ to every matched vertex in $A$, and
+      $1$ unit of flow for each matched vertex in $B$ to $t$.
+
+      This is a valid flow, and the value of this flow is the size of the
+      matching $|M|$.
+
+      $\Leftarrow$ \underline{Given a Flow, we can construct a Matching}
+
+      If there exists a (maximum) flow of value $k$, then there exists an
+      integer-valued flow of value $k$ (This is because we have integer-valued
+      capacities, so Ford-Fulkerson will find such a flow).
+
+      Since there can be at most one unit of flow into each vertex in $A$ (by
+      the structure of the flow network), each edge from $A$ to $B$ can have at
+      most one unit of flow.
+
+      Consider the cut ($\{s\} \cup A$, $\{t\} \cup B$), the flow leaving the
+      cut is $k$, and there must be $k$ edges carrying the flow from $A$ to $B$.
+
+      Let $M$ be the set of edges from $A$ to $B$ that carry flow. Since we have
+      one unit of flow on all edges, none of the edges are shared (that's the
+      conservation constraint)
+
+      Therefore $M$ must be a matching.
+    }
+
+    Great! Now we have a way to find a maximum matching. Let's quickly look at
+    the running time.
+
+    \subsubsection{Running Time}
+
+    Suppose $|A| = |B| = n$. Let $C$ be the total capacity of the edges leaving
+    $s$, then $C = n$.
+
+    The Ford-Fulkerson running time is $\O(n(m + n))$
+
+    \subsection{Extensions to the Max Flow Problem}
+
+    These are alternative variants to the problems we've seen thus far. We're
+    not doing anything new here, but it will give us helpful notions to solve
+    network flow problems.
+
+    \subsubsection{Multiple Sources and Sinks}
+
+    \btw {
+      Suppose that we have multiple sources and sinks. These nodes still behave
+      as they used to before, but this time we may have more than one of each.
+
+      In this case, we say that the flow is the sum of the flow into each sink.
+    }
+
+    Consider the following graph
+
+    \begin{center}
+      \begin{tikzpicture}
+        \node[main] (1) at (0, 0) {};
+        \node[main] (2) at (0, -2) {};
+        \node[main] (3) at (2, 0) {};
+        \node[main] (4) at (2, -2) {};
+
+        \draw [->] (1) -- (3);
+        \draw [->] (1) -- (4);
+        \draw [->] (2) -- (3);
+        \draw [->] (2) -- (4);
+
+        \node[main, source] (s1) at (-2, 0) {$s_1$};
+        \node[main, source] (s2) at (-2, -1) {$s_2$};
+        \node[main, source] (s3) at (-2, -2) {$s_3$};
+
+        \node[main, sink] (t1) at (4, 0) {$t_1$};
+        \node[main, sink] (t2) at (4, -1) {$t_2$};
+        \node[main, sink] (t3) at (4, -2) {$t_3$};
+
+        \draw [->] (s1) -- (1);
+        \draw [->] (s1) -- (2);
+        \draw [->] (s2) -- (1);
+        \draw [->] (s2) -- (2);
+        \draw [->] (s3) -- (1);
+        \draw [->] (s3) -- (2);
+
+        \draw [->] (3) -- (t1);
+        \draw [->] (4) -- (t1);
+        \draw [->] (3) -- (t2);
+        \draw [->] (4) -- (t2);
+        \draw [->] (3) -- (t3);
+        \draw [->] (4) -- (t3);
+      \end{tikzpicture}
+    \end{center}
+
+    We can reduce this to the problem we already know how to solve.
+
+    \begin{center}
+      \begin{tikzpicture}
+        \node[main] (1) at (0, 0) {};
+        \node[main] (2) at (0, -2) {};
+        \node[main] (3) at (2, 0) {};
+        \node[main] (4) at (2, -2) {};
+
+        \draw [->] (1) -- (3);
+        \draw [->] (1) -- (4);
+        \draw [->] (2) -- (3);
+        \draw [->] (2) -- (4);
+
+        \node[main, source] (s) at (-4, -1) {$s$};
+        \node[main, sink] (t) at (6, -1) {$t$};
+
+        \node[main] (5) at (-2, 0) {};
+        \node[main] (6) at (-2, -1) {};
+        \node[main] (7) at (-2, -2) {};
+
+        \node[main] (8) at (4, 0) {};
+        \node[main] (9) at (4, -1) {};
+        \node[main] (10) at (4, -2) {};
+
+        \draw [->] (5) -- (1);
+        \draw [->] (5) -- (2);
+        \draw [->] (6) -- (1);
+        \draw [->] (6) -- (2);
+        \draw [->] (7) -- (1);
+        \draw [->] (7) -- (2);
+
+        \draw [->] (3) -- (8);
+        \draw [->] (4) -- (8);
+        \draw [->] (3) -- (9);
+        \draw [->] (4) -- (9);
+        \draw [->] (3) -- (10);
+        \draw [->] (4) -- (10);
+
+        \draw [->] (s) -- node[mid] {$\infty$} (5);
+        \draw [->] (s) -- node[mid] {$\infty$} (6);
+        \draw [->] (s) -- node[mid] {$\infty$} (7);
+
+        \draw [->] (8) -- node[mid] {$\infty$} (t);
+        \draw [->] (9) -- node[mid] {$\infty$} (t);
+        \draw [->] (10) -- node[mid] {$\infty$} (t);
+      \end{tikzpicture}
+    \end{center}
+
+    You can convince yourself that these graphs represent the same thing.
+
+    \subsection{Circulations with Demands}
+
+    Given a flow network $G = (V, E)$ with edge capacities. Now each vertex has
+    a {\bf demand} $d_v$.
+
+    \begin{itemize}
+      \item If $d_v > 0$, it means that $v$ is a net sink and should receive $d_v$
+        {\it more} units of flow that it outputs.
+      \item If $d_v < 0$, it means that $v$ is a new source and should supply
+        $-d_v$ more units of flow that it takes in.
+    \end{itemize}
+
+    \note {
+      If $d_v = 0$, this is just a vertex which conserves flow, which is exactly
+      the vertices that we've been working with up to this point.
+    }
+
+    \begin{itemize}
+      \item Let $S$ be the set of vertices $v \in V$ with negative demands $d_v < 0$
+      \item Let $T$ be the set of vertices with positive demands $d_v > 0$.
+    \end{itemize}
+
+    \Definition {Circulation} {
+      A {\bf circulation} is a function $f: E \to \R^+$ satisfying
+
+      \begin{enumerate}
+        \item \underline{Capacity Conditions}
+
+          \[
+            (\forall e \in E) [0 \le f(e) \le C_e]
+          \]
+
+          Where $C_e$ is the capacity of edge $e$.
+
+        \item \underline{Demands Conditions}
+
+          \[
+            (\forall v \in V)[f^\text{in}(v) - f^\text{out}(v) = d_v]
+          \]
+
+          In other words, the {\it demand} of $v$ is exactly the difference
+          between the flow going in, and the flow going out.
+      \end{enumerate}
+    }
+
+    Notice that up to this point, we've been thinking about {\it maximization}
+    problems. Here, there is nothing to maximize. We only want to know {\it if}
+    this is feasible.
+
+    Let's take a look at a simple example.
+
+    \example {
+      Suppose we have the following network.
+
+      \begin{center}
+        \begin{tikzpicture}[
+            main/.style = {draw, circle, outer sep=2mm, minimum size=10mm},
+          ]
+          \node[main] (t) {$-3$};
+          \node[main] (l) [below left of=t] {$-3$};
+          \node[main] (b) [below right of=l] {$4$};
+          \node[main] (r) [below right of=t] {$2$};
+
+          \draw [->] (t) -- node[above left] {$3$} (l);
+          \draw [->] (t) -- node[above right] {$3$} (r);
+          \draw [->] (l) -- node[above] {$2$} (r);
+          \draw [->] (l) -- node[below left] {$2$} (b);
+          \draw [->] (r) -- node[below right] {$2$} (b);
+        \end{tikzpicture}
+      \end{center}
+
+      Here, the numbers inside the nodes represent the demands. For the top
+      node, the demand is $-3$, so it must {\it supply exactly} $3$ units of flow.
+
+      The numbers on the edges haven't changed. They represent the maximum
+      capacities that can be sent on that edge.
+
+      {\bf Question}: Is this a feasible circulation problem? Can we find a flow
+      value for every edge so that we satisfy the demands of all vertices?
+
+      {\bf Answer}: Yes!
+
+      \begin{center}
+        \begin{tikzpicture}[
+            main/.style = {draw, circle, outer sep=2mm, minimum size=10mm},
+          ]
+          \node[main] (t) {$-3$};
+          \node[main] (l) [below left of=t] {$-3$};
+          \node[main] (b) [below right of=l] {$4$};
+          \node[main] (r) [below right of=t] {$2$};
+
+          \draw [->, selected] (t) -- node[above left] {\fc{1}{3}} (l);
+          \draw [->, selected] (t) -- node[above right] {\fc{2}{3}} (r);
+          \draw [->, selected] (l) -- node[above] {\fc{2}{2}} (r);
+          \draw [->, selected] (l) -- node[below left] {\fc{2}{2}} (b);
+          \draw [->, selected] (r) -- node[below right] {\fc{2}{2}} (b);
+        \end{tikzpicture}
+      \end{center}
+
+      How can we find this answer?
+
+      \TODO{} Next time.
+    }
+
+  \end{document}
