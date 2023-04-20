@@ -4792,4 +4792,231 @@ end
     so it satisfies the demand conditions in the network without lower bounds.
   }
 
+  \newpage
+  \section{Reductions}
+
+  To show that problem $X$ is {\it at least} as hard as $Y$, we can give a
+  {\bf reduction} from $Y$ to $X$. A procedure that solves $Y$ using the ability
+  to solve $X$.
+
+  To have this quantify efficiency, we want to the procedure to be efficient.
+
+  \Definition {Poly-time Reducibility}
+  {
+    If any instance of $Y$ can be solved by a polynomial time algorithm that can
+    make polynomially many calls to a procedure for solving instances of $X$,
+    then we say that $Y$ is {\bf poly-time reducible} to $X$, and we write $Y
+    \le_{p} X$.
+  }
+
+  \example {
+    We showed that the Bipartite-Matching problem could be reduced to the Max
+    Flow problem.
+
+    \[
+      \text{Bipartite Matching} \le_p \text{Max Flow}
+    \]
+  }
+
+  Let's take a look at some example problems.
+
+  \subsection{Independent Set Problem}
+
+  \Definition {Independent Set}
+  {
+    An {\bf Independent Set} in a graph is a subset of vertices, no two of which
+    are adjacent.
+  }
+
+  The Maximum Independent set problem asks us to find the largest independent
+  set in a graph.
+
+  % \note {
+  %   It will be helpful to have yes/no algorithms for search
+  % }
+
+  Let's do an example.
+
+  \example {
+    Suppose we have the following graph $G$.
+
+    \begin{center}
+      \begin{tikzpicture}
+        \node[main, draw=darkred!80, fill=red!20, very thick] (1) {$1$};
+        \node[main] (3) [below of=1] {$3$};
+        \node[main] (2) [right of=1] {$2$};
+        \node[main, draw=darkred!80, fill=red!20, very thick] (4) [below of=2] {$4$};
+        \node[main, draw=darkred!80, fill=red!20, very thick] (5) [right of=2] {$5$};
+
+        \draw [-] (1) -- (3);
+        \draw [-] (1) -- (2);
+        \draw [-] (3) -- (4);
+        \draw [-] (2) -- (4);
+        \draw [-] (2) -- (5);
+      \end{tikzpicture}
+    \end{center}
+  }
+
+  \subsection{Vertex Cover Problem}
+
+  \Definition {Vertex Cover}
+  {
+    A {\bf Vertex Cover} of a graph is a subset of vertices such that every edge
+    has at least one end in that subset.
+  }
+
+  The vertex cover problem asks to find a {\it smallest} vertex cover.
+
+  % \section{NP and NP-Completeness}
+
+  \example {
+    A minimal vertex cover of this graph would be
+
+    \begin{center}
+      \begin{tikzpicture}
+        \node[main] (1) {$1$};
+        \node[main, draw=darkblue!80, fill=blue!20, very thick] (3) [below of=1] {$3$};
+        \node[main, draw=darkblue!80, fill=blue!20, very thick] (2) [right of=1] {$2$};
+        \node[main] (4) [below of=2] {$4$};
+        \node[main] (5) [right of=2] {$5$};
+
+        \draw [-] (1) -- (3);
+        \draw [-] (1) -- (2);
+        \draw [-] (3) -- (4);
+        \draw [-] (2) -- (4);
+        \draw [-] (2) -- (5);
+      \end{tikzpicture}
+    \end{center}
+  }
+
+  This problems are actually inverses of each other! The smallest vertex cover
+  will produce the largest independent set.
+
+  \Lemma {
+    For any graph $G = (V, E)$, a vertex subset $S \subseteq V$ is an
+    independent set {\bf if and only if} $V \setminus S$ is a vertex cover.
+  }
+  {
+    $\Rightarrow$
+
+    Suppose $S$ is an independent set. Then for any $\{u, v\} \in E$, at most
+    one of $u, v$ is in $S$, so {\it at least one} is in $V \setminus S$, so $V
+    \setminus S$ is a vertex cover by definition of a vertex cover.
+
+    $\Leftarrow$
+
+    Suppose $V \setminus S$ is a vertex cover. Suppose for the sake of
+    contradiction that $u \in S$ and $v \in S$, and $\{u, v\} \in E$. Then
+    neither end of $E$ would be in $V \setminus S$, so that edge is not covered
+    and $V \setminus S$ is not a cover. This is a contradiction, so $S$ is an
+    independent set.
+  }
+
+  \note {
+    This is a special example! In most cases, things will only reduce in one
+    direction.
+  }
+
+  What this shows is that the Independent Set problem is polynomial time
+  reducible to the Vertex Cover problem, and vice versa.
+
+  \subsection{Set Cover Problem}
+
+  Suppose that we're given a set $U$ and subsets $S_1, S_2, \dots, S_m \subseteq
+  U$. We want to find a minimal subset of the $S_i$s so that the union is all of
+  $U$.
+
+  % Let's do an example.
+
+  % \example {
+  %   Suppose we have the sets
+  % }
+
+  \Theorem {
+    Set Cover is {\it at least} as hard as Vertex Cover.
+
+    \[
+      \text{Vertex Cover} \le_p \text{Set Cover}
+    \]
+  }
+  {
+    Given an instance of Vertex Cover, a graph $G = (V, E)$, we want to
+    construct an instance of Set Cover.
+
+    Let $U = E$. For all $v \in V$, let $S_v$ be the set of edges incident of
+    $v$.
+
+    {\bf Claim}: $G$ can be covered with $k$ vertices {\bf if and only if} $U$
+    can be covered with $k$ $S_v$s.
+
+    \begin{itemize}
+      \item If $\{v_1, \dots, v_k\}$ is a vertex cover, then $\{S_{v_1}, \dots,
+        S_{v_k}\}$ include all the edges.
+
+      \item If $\{S_{v_1}, \dots, S_{v_k}\}$ include all the edges, then $\{v_1,
+        \dots, v_k\}$ is a vertex cover, by definition.
+    \end{itemize}
+  }
+
+  By solving the set cover problem, we will solve the original vertex cover
+  problem.
+
+  \subsection{Boolean Satisfiability}
+
+  \Definition {} {
+    Given a set of Boolean variables $\{x_1, \dots, x_n\}$, a {\bf term} or {\bf
+    literal} is $x_i$ or $\bar x_i$.
+
+    A {\bf Clause} is a {\it disjunction} of terms.
+
+    \[
+      (x_2 \vee x_6 \vee \bar x_{11})
+    \]
+
+    We say that a set of clauses is {\bf satisfiable} if there is an assignment
+    of the $x_i$s to True/False so that all clauses evaluate to True.
+  }
+
+  The Boolean Satisfiability Problem (SAT) asks whether a given set of clauses
+  is satisfiable.
+
+  \note {
+    We never repeat a variable (or its negation), inside of any clause.
+  }
+
+  \note {
+    $k$-SAT is a subset of SAT where each clause has exactly $k$ terms.
+  }
+
+  In 3-SAT, each clause has exactly 3 terms.
+
+  \Theorem {
+    3-SAT is no harder than the Independent Set Problem.
+
+    \[
+      \text{$3$-SAT} \le_p \text{Independent Set}
+    \]
+  }
+  {
+    Given a 3-SAT instance, we use ``gadgets" to construct a graph that has a
+    ``big" independent set {\bf if and only if} 3-SAT is satisfiable.
+
+    For a clause $C_j$, we introduce 3 vertices $v_{j, 1}, v_{l, 2}, v_{j, 3}$
+    and we connect them with a triangle.
+
+    We also connect $v_{j, l}$ and $v_{j', l'}$ if term $l$ in $C_j$ is the
+    negation of term $l'$ in $C_j'$.
+
+    \example {
+      \[
+        (x_1 \vee x_2 \vee \bar x_3) \wedge (\bar x_1 \vee x_2 \vee x_4)
+      \]
+
+      \TODO{} add triangle picture, Apr. 20 15:13
+    }
+
+    {\bf Claim}: The formula is satisfiable {\bf if and only if} this graph 
+    has an independent set of size $m$ for $m$ clauses.
+  }
+
 \end{document}
