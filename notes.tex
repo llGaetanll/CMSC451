@@ -5017,6 +5017,135 @@ end
 
     {\bf Claim}: The formula is satisfiable {\bf if and only if} this graph 
     has an independent set of size $m$ for $m$ clauses.
+
+    {\bf Proof}: If the formula is satisfiable for every clause, there must be
+    some variable setting that shows the clause is true. (There must be at least
+    one variable in each clause that makes that clause true.) We'll take this
+    variable as the vertex that we'll keep in the independent set problem.
+
+    This gives a set of vertices of size equal to the number of triangles. It's
+    independent because 
+
+    \begin{itemize}
+      \item We only take one vertex per triangle
+      \item We don't pick vertices at both ends of an edge between triangles.
+    \end{itemize}
+
+    \note {
+      We have one triangle for every clause, that's how we create the triangles.
+    }
+
+    Conversely, there is an independent set of size equal to the number of
+    triangles. It must have one vertex per triangle. Construct a satisfying
+    assignment by setting the corresponding variables to the values that make
+    those clauses true. Since an independent set can't contain vertices from
+    different triangles corresponding to variables $x_i$ and $\bar x_i$, this
+    assignment will be consistent. It makes every clause evaluate to true, so it
+    satisfies the formula.
+  }
+
+  We've now shown that 3-SAT is the easiest of these problems that we've looked
+  at. It's no harder than Independent Set, which is no harder than Vertex
+  Cover, which is no harder than Set Cover
+
+  \[
+    \text{3-SAT} \le_p \text{Independent Set} =_p \text{Vertex Cover} \le_p
+    \text{Set Cover}
+  \]
+
+  \section{NP and NP-Completeness}
+
+  We say that an algorithm is sufficient if it runs in time polynomial in the
+  input size. We can collect these problems with efficient solutions into a {\bf
+  complexity class} called $P$.
+
+  We'll focus on decision problems: problem for which we can give a yes/no
+  answer. Characterize such problem by a {\bf language} $L \subseteq \Sigma^*$,
+  the set of all possible inputs. $L$ contains only the set of instances for
+  which the answer to the problem is Yes.
+
+  A language $L$ is in $P$ if there exists an algorithm running in time
+  polynomial in $n$ that accepts $x \in \Sigma^n$ if $x \in L$, and rejects $x
+  \in \Sigma^n$ if $x \not\in L$.
+
+  \example {
+    For 3-SAT, $x$ is a set of clauses, $L$ is the set of satisfiable 3-SAT
+    clauses.
+  }
+
+  The harder problems that we've considered (i.e. 3-SAT) may not have efficient
+  algorithms, but they all have the property that solutions can be verified
+  efficiently.
+
+  \example {
+    \begin{itemize}
+      \item For 3-SAT, the satisfying assignment can be checked very quickly.
+      \item For the independent set problem, its very quick to check whether the
+        vertices of the independent set  are really independent.
+    \end{itemize}
+  }
+
+  The class $NP$ is the set of problems whose yes instances can be efficiently
+  verified.
+
+  \example {
+    If an instance $x$ is in the language $L$, then there must exist a witness
+    (a proof) $y$, and some polynomial time algorithm $A$, that you can run on
+    input $x$ and $y$, and it should accept.
+
+    \[
+      x \in L \Rightarrow \exists y, A(x, y) \text{ accepts}
+    \]
+
+    Conversely, if there is input $x$ to the algorithm, for any proof $y$ they
+    try to give you, you will not be fooled.
+
+    \[
+      x \not\in L \Rightarrow \forall y, A(x, y) \text{ rejects}
+    \]
+  }
+
+  Clearly, $P \subseteq NP$, $P$ is the set problems that are quick to solve and
+  quick to check, and $NP$ is the set of problems that are hard to solve but
+  quick to check.
+
+  We can get evidence for the hardness of $NP$ problems using reductions.
+
+  \Definition {NP Hard}
+  {
+    If, for all problems $y$ that are in $NP$, $Y \le_p X$ ($X$ is at least as
+    hard as $Y$), we say that $X$ is NP hard.
+  }
+
+  \Definition {NP Complete}
+  {
+    If $X$ is in $NP$, and $X$ is NP Hard, we say that $X$ is $NP$ complete.
+  }
+
+  \subsection{Trivial NP-Complete Problem: Circuit Satisfiability}
+
+  A {\bf circuit} is a labeled DAG where sources (the vertices with no incoming
+  edges) are going to be labeled either $0$, $1$ or \texttt{free} (meaning you
+  figure out how to set them.)
+
+  We have vertices with both incoming and outgoing edges, these correspond to
+  boolean logic gates (\texttt{AND} / \texttt{OR} / \texttt{NOT} gates.)
+
+  There is a unique sink (a vertex with no outgoing edges) which represents the
+  output.
+
+  {\bf Problem}: Is there an assignment of the \texttt{free} inputs that makes
+  the circuit evaluate to $1$?
+
+
+  \NamedTheorem{
+    \subsection{Cook-Levin Theorem}
+  }
+  {
+    $3$-SAT is $NP$-Complete.
+  }
+  {
+    \TODO{} Next time! :)
   }
 
 \end{document}
