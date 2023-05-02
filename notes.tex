@@ -5145,6 +5145,420 @@ end
     $3$-SAT is $NP$-Complete.
   }
   {
+    3-SAT is in NP since we can provide a satisfying assignment as the proof.
+    This can be efficiently verified by checking that each clause evaluates to
+    true. Since the problem is easy to check, it's in NP.
+
+    Now to show that it's in NP-Hard. Given any instance of circuit SAT, we
+    construct an instance of 3-SAT (we must be able to construct this in
+    polynomial time) such that, if one is satisfiable if and only if the other
+    is. We essentially want to translate Circuit Sat to 3-SAT.
+
+    We introduce a boolean variable $x_v$ for every vertex $v$ of the circuit.
+
+    {\texttt{NOT}}
+
+    \begin{center}
+      \begin{tikzpicture}
+        \node[main] (u) {$u$};
+        \node[main] (v) [right of=u] {$\neg_v$};
+
+        \draw [->] (u) -- (v);
+      \end{tikzpicture}
+    \end{center}
+
+    Add clauses
+
+    \[
+      (x_u \vee x_v) \wedge (\bar x_u \vee \bar x_v)
+    \]
+
+    (note that this is 2-SAT, but that's alright, 2-SAT is easier than 3-SAT)
+
+    {\texttt{OR}}
+
+    \begin{center}
+      \begin{tikzpicture}
+        \node[main] (u) {$u$};
+        \node[main] (v) [below right of=u] {$\vee_v$};
+        \node[main] (w) [below left of=v] {$w$};
+
+        \draw [->] (u) -- (v);
+        \draw [->] (w) -- (v);
+      \end{tikzpicture}
+    \end{center}
+
+    Add clauses
+
+    \[
+      (x_v \vee \bar x_u) \wedge (x_v \vee \bar x_w) \wedge (\bar x_v \vee x_u
+      \vee x_w)
+    \]
+
+    {\texttt{AND}}
+
+    Simply use DeMorgan's Law on the above.
+
+    \begin{center}
+      \begin{tikzpicture}
+        \node[main] (u) {$u$};
+        \node[main] (v) [below right of=u] {$\wedge_v$};
+        \node[main] (w) [below left of=v] {$w$};
+
+        \draw [->] (u) -- (v);
+        \draw [->] (w) -- (v);
+      \end{tikzpicture}
+    \end{center}
+
+    Add clauses
+
+    \[
+      (x_v \vee \bar x_u \vee \bar x_w) \wedge (\bar x_v \vee x_u) \wedge (\bar
+      x_v \vee x_w)
+    \]
+
+    If we have a \texttt{0} input, we want to include a clause that forces this
+    to be a zero, just add $\bar x_v$. Conversely for a \texttt{1}, we want to
+    add $x_v$.
+
+    For a \texttt{free} input, we just add nothing.
+
+    For the output, $x_v$ will evaluate to true if and only if the circuit
+    evaluates to true.
+
+    To make this a 3-SAT formula, we add some variables (4 of them)
+
+    \[
+      z_1, z_2, z_3, z_4
+    \]
+
+    with clauses
+
+    \[
+      (\bar z_i \vee z_3 \vee z_4) \wedge (\bar z_i \vee z_3 \vee \bar
+      z_4) \wedge (\bar z_i \vee \bar z_3 \vee z_4) \wedge (\bar z_i \vee \bar z_3
+      \vee \bar z_4)
+    \]
+
+    The only way to satisfy this is for $z_i$ to be 0. We add this for $i = 1,
+    2$ so that $z_1 = z_2 = 0$ in any satisfying assignment.
+
+    Then we can pad clauses to have exactly 3 terms.
+
+    \[
+      x_v \Rightarrow (x_v \vee z_1 \vee z_2)
+    \]
+  }
+
+  \subsection{Other NP-Complete Problems}
+
+  \subsubsection{The Traveling Salesman Problem}
+
+  Given cities $v_1, \dots, v_n$, distances $d(v_i, v_j)$ and a bound $D$, is
+  there a tour of the cities of total length at most $D$?
+
+  \subsubsection{The Hamiltonian Cycle Problem}
+
+  Given a graph, is there a cycle in the graph that visits every vertex exactly
+  once?
+
+  \subsubsection{The 3 Dimensional Matching Problem}
+
+  Given some disjoint sets $X, Y, Z$, each of size $n$. We're also given a set
+  $T \subset X \times Y \times Z$ of ordered triples.
+
+  Is there a set of triples so that every element of $X \cup Y \cup Z$ is
+  included in exactly one triple?
+
+  \subsubsection{The 3-Coloring Problem}
+
+  Can we assign 3 colors to the vertices of a graph so that no two adjacent
+  vertices have the same color?
+
+  \subsubsection{The Subset Sum Problem}
+
+  Given numbers $w_1, \dots, w_n$, and a target value $W$ (all positive.)
+
+  Is there a subset of the $w_i$s that sum to exactly $W$?
+
+  \subsubsection{Scheduling with least times and deadlines}
+
+  Given $n$ jobs, indexed by some $1 \le i \le n$. Every job has some release
+  time $r_i$: you cannot start that job before $r_i$, it has some deadline
+  $d_i$, and some time $t_i$.
+
+  Job $i$ must be scheduled for duration $t_i$, starting after $r_i$, and ending
+  before $d_i$.
+
+  Given a list of job, is such a schedule possible?
+
+  \subsection{The Hamiltonian Cycle Problem}
+
+  \Definition{The Hamiltonian Cycle Problem}
+  {
+    Given a directed (or undirected, that works too) $G = (V, E)$, a {\bf
+    Hamiltonian Cycle} is a cycle that visits each vertex exactly once.
+  }
+
+  Definitely not every graph has such a cycle. Let's look at an example
+
+  \example {
+    \begin{center}
+      \begin{tikzpicture}
+        \node[main] (1) {1};
+        \node[main] (2) [right of=1] {2};
+        \node[main] (3) [right of=2] {3};
+
+        \draw [->] (1) -- (2);
+        \draw [->] (2) -- (3);
+      \end{tikzpicture}
+    \end{center}
+
+    Here, you can go from 1, to 2, to 3, but you can't go back to 1.
+  }
+
+  \sidenote{
+    Homework Deadline extended to Friday May 5
+  }
+
+  \subsubsection{Showing NP Completeness}
+
+  \Theorem {
+    Hamiltonian Cycle is NP-Complete.
+  }
+  {
+    Again, we have to show two things:
+
+    \begin{enumerate}
+      \item The problem is in NP, so it can be verified efficiently
+      \item The problem is in NP Hard, so its at least as hard as all the
+        problems in NP.
+    \end{enumerate}
+
+    {\bf The problem is in NP}.
+
+    The proof is a list of all vertices . The verifier checks that every
+    adjacent pair of vertices is joined by an edge, including the last vertex to
+    the first. It also checks that each vertex appears in the list exactly once.
+
+    These checks take polynomial time and accepts if and only if the list
+    truly specifies a Hamiltonian path.
+
+    {\bf The problem is NP-Hard}
+
+    3-SAT is often a good fallback choice if we don't know where to start from,
+    this is exactly what we're going to do here. It doesn't seem like these
+    problems have all that much in common, but in fact they do.
+
+    Remember the direction of the reduction here: we want to take an instance of
+    3-SAT, and construct a graph that corresponds to that 3-SAT formula.
+
+    Given a 3-SAT formula with variables $\{x_1, \dots, x_n\}$, we construct a
+    graph with ``long" paths $\{P_1, \dots, P_n\}$, in one to one correspondence
+    with $x_1, \dots, x_n$. We also add vertices $s, t$ connected as follows.
+
+    \TODO{} draw graph from class (Tue May 2, 14:23)
+    % \begin{center}
+    %   \begin{tikzpicture}
+    %     \node[main] (1) at (0, 0) {};
+    %     \node[main] (2) at (0, -2) {};
+    %     \node[main] (3) at (2, 0) {};
+    %     \node[main] (4) at (2, -2) {};
+    %
+    %     \draw [->] (1) -- (3);
+    %     \draw [->] (1) -- (4);
+    %     \draw [->] (2) -- (3);
+    %     \draw [->] (2) -- (4);
+    %
+    %     \node[main, source] (s) at (-4, -1) {$s$};
+    %     \node[main, sink] (t) at (6, -1) {$t$};
+    %
+    %     \node[main] (5) at (-2, 0) {};
+    %     \node[main] (6) at (-2, -1) {};
+    %     \node[main] (7) at (-2, -2) {};
+    %
+    %     \node[main] (8) at (4, 0) {};
+    %     \node[main] (9) at (4, -1) {};
+    %     \node[main] (10) at (4, -2) {};
+    %
+    %     \draw [->] (5) -- (1);
+    %     \draw [->] (5) -- (2);
+    %     \draw [->] (6) -- (1);
+    %     \draw [->] (6) -- (2);
+    %     \draw [->] (7) -- (1);
+    %     \draw [->] (7) -- (2);
+    %
+    %     \draw [->] (3) -- (8);
+    %     \draw [->] (4) -- (8);
+    %     \draw [->] (3) -- (9);
+    %     \draw [->] (4) -- (9);
+    %     \draw [->] (3) -- (10);
+    %     \draw [->] (4) -- (10);
+    %
+    %     \draw [->] (s) -- node[mid] {$\infty$} (5);
+    %     \draw [->] (s) -- node[mid] {$\infty$} (6);
+    %     \draw [->] (s) -- node[mid] {$\infty$} (7);
+    %
+    %     \draw [->] (8) -- node[mid] {$\infty$} (t);
+    %     \draw [->] (9) -- node[mid] {$\infty$} (t);
+    %     \draw [->] (10) -- node[mid] {$\infty$} (t);
+    %   \end{tikzpicture}
+    % \end{center}
+
+    For a clause $C_j$, we add a vertex connected to 3 of the paths such that
+    the vertex can {\it only} be visited if one of the paths is traversed in the
+    correct direction.
+
+    What's happening here is that we create a correspondence between the truth
+    values and the paths of the graph. In this case, a path from left to right
+    will mean \texttt{true}, and a path from right to left will mean
+    \texttt{false}.
+
+    \example {
+      For a clause $C_1 = (x_1 \vee \bar x_2 \vee x_3)$
+    }
+
+    \TODO{} Finish graph
+    \begin{center}
+      \begin{tikzpicture}
+
+        \node[main] (Cj) at (8, -1) {$C_j$};
+
+        \node (x1) at (-4, 0) {$x_1$};
+        \node[main] (x11) at (-3, 0) {};
+        \node[main] (x12) at (0, 0) {};
+        \node (x1dots) at (3, 0) {$\cdots$};
+        \node[main] (x1n) at (6, 0) {};
+
+        \node (x2) at (-4, -1) {$x_2$};
+        \node[main] (x21) at (-3, -1) {};
+        \node[main] (x22) at (0, -1) {};
+        \node (x2dots) at (3, -1) {$\cdots$};
+        \node[main] (x2n) at (6, -1) {};
+
+        \node (x3) at (-4, -2) {$x_3$};
+        \node[main] (x31) at (-3, -2) {};
+        \node[main] (x32) at (0, -2) {};
+        \node (x3dots) at (3, -2) {$\cdots$};
+        \node[main] (x3n) at (6, -2) {};
+
+        \draw [->] (x11) -- (x12);
+        \draw [->] (x12) -- (x11);
+        \draw [->] (x12) -- (x1dots);
+        \draw [->] (x1dots) -- (x12);
+        \draw [->] (x1dots) -- (x1n);
+        \draw [->] (x1n) -- (x1dots);
+
+        \draw [->] (x21) -- (x22);
+        \draw [->] (x22) -- (x21);
+        \draw [->] (x22) -- (x2dots);
+        \draw [->] (x2dots) -- (x22);
+        \draw [->] (x2dots) -- (x2n);
+        \draw [->] (x2n) -- (x2dots);
+
+        \draw [->] (x31) -- (x32);
+        \draw [->] (x32) -- (x31);
+        \draw [->] (x32) -- (x3dots);
+        \draw [->] (x3dots) -- (x32);
+        \draw [->] (x3dots) -- (x3n);
+        \draw [->] (x3n) -- (x3dots);
+
+        \draw [->] (x12) to[out=30] (Cj);
+        \draw [<-] (x1dots) to[out=30] (Cj);
+
+        \draw [<-] (x22) to[bend left=10] (Cj);
+        \draw [->] (x2dots) to[bend left=10] (Cj);
+
+        \draw [->] (x32) -- (Cj);
+        \draw [<-] (x3dots) -- (Cj);
+
+      \end{tikzpicture}
+    \end{center}
+
+    We do this for every clause, connect the gadget to vertices $3j$ and $3j +
+    1$.
+  }
+
+  \subsection*{Coping Intractability}
+
+  Sometimes problems are hard, and we might not know it. Here's some things we
+  can do.
+
+  \begin{itemize}
+    \item Hope they're not hard.
+    \item Use an exponential time algorithm. For small instances, maybe that's
+      ok.
+    \item Find an efficient algorithm for special cases, maybe the cases you
+      care about.
+
+      For example on Homework 3, we gave a dynamic programming algorithm for the
+      vertex cover problem on trees, instead of general graph. Maybe you can do
+      it if a graph is ``not too far away from a tree."
+
+    \item Maybe we can find a ``good enough" approximate solution.
+  \end{itemize}
+
+  \section{Approximation Algorithm}
+
+  Consider an optimization problem. We can quantify the quality of an
+  appropriate solution by the {\bf approximation ratio} $\gamma$.
+
+  \begin{itemize}
+    \item For a maximization problem, we want to find a solution with value $x$
+      so that
+
+      \[
+        \frac{x}{\opt} \ge \gamma
+      \]
+
+      with $\gamma \le 1$, and $\opt$ is the optimal solution.
+
+    \item For a minimization problem, we want to find a solution with value $x$
+      so that
+
+      \[
+        \frac{x}{\opt} \le \gamma
+      \]
+
+      here with $\gamma \ge 1$.
+  \end{itemize}
+
+  \subsection{Load Balancing Problem}
+
+  Given jobs $\{1, \dots, n\}$ where job $i$ takes time $t_i$. We want to assign
+  each job to one of $m$ machines. Let $A_j$ be the set of jobs that we chose to
+  assign to machine $j$. We get to chose what goes in this set.
+
+  The load on machine $j$ is the total amount of time it will take to finish all
+  jobs in $A_j$.
+
+  \[
+    \text{load}(j) = \sum_{i \in A_j} t_i
+  \]
+
+  {\bf Goal}: Minimize the maximum load on any given machine. In other words
+
+  \[
+    \min(\max_j (\text{load}(j)))
+  \]
+
+  We are going to do this by defining what jobs go in $A_j$. 
+
+  This problem is NP-Hard, try to show it.
+
+  \subsubsection{The Greedy Approach}
+
+  Go through all the jobs (don't worry about the order for now), and assign each
+  job to the machine with the lowest load so far.
+
+  This algorithm will not produce the optimal solution. Try to find such an
+  instance. On the other hand, it's never worse than twice as bad as the optimal
+  solution! Let's see why.
+
+  \Theorem {
+    The greedy algorithm achieves an approximation ratio of 2.
+  }
+  {
     \TODO{} Next time! :)
   }
 
