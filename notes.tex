@@ -5555,11 +5555,146 @@ end
   instance. On the other hand, it's never worse than twice as bad as the optimal
   solution! Let's see why.
 
+  Before we can prove the theorem, let's observe that
+
+  \Lemma {
+    The optimal value for the load balancing problem is at least
+
+    \[
+      \max \left\{ \frac{1}{m} \sum_i t_i, \,\, \max_i (t_i) \right\}
+    \]
+
+    The first value is the average load per machine, the latter is the total
+    load of all machines.
+  }
+  {
+    Omitted.
+  }
+
+  Now for the theorem.
+
   \Theorem {
     The greedy algorithm achieves an approximation ratio of 2.
   }
   {
-    \TODO{} Next time! :)
+    Let machine $j$ achieve the max load. Let job $i$ be the last job assigned
+    to machine $j$.
+
+    Let $T_j$ be the final load on machine $j$. Before job $i$ was assigned, the
+    load on machine $j$ was $T_j - t_i$, which was the smallest load on any
+    machine.
+
+    So the total load is
+
+    \[
+      \sum_k T_k \ge m \underbrace{(T_j - t_i)}_\text{smallest load}
+    \]
+
+    Where $m$ is the number of machines.
+
+    This tells us that $T_j - t_i \le \frac{1}{m} \sum_k T_k = \frac{1}{m}
+    \sum_l t_l$.
+
+    So the optimal value $T^*$ satisfies $T^* \le T_j - t_i$. But machine $j$
+    also has job $i$, so
+
+    \[
+      T_j = \underbrace{(T_j - t_i)}_{\le T^*} + \underbrace{t_i}_{\le T^*} \le 2 T^*
+    \]
   }
+
+  We can do better by sorting the jobs and considering them in order from
+  longest to shortest.
+
+  \Lemma {
+    If there are more than $m$ jobs, then $T^* \ge 2t_{m + 1}$.
+
+    Here we order the jobs so $t_1 \ge t_2 \ge \cdots \ge t_n$.
+  }
+  {
+    Some machine gets $2$ jobs, and $t_i$ is the last assigned, then %each of which have duration at least $t_{m + 1}$.
+
+    \[
+      t_i \le t_{m + 1} \le T^* / 2
+    \]
+
+    By the Lemma.
+
+    But as in the proof of the previous theorem,
+
+    \[
+      T_j \le (T_j - t-I) + t_i \le \frac{3}{2} T^*
+    \]
+  }
+
+  \subsection{Center Selection}
+
+  Given $n$ sites, specified by their coordinates, we want to find $k$ (fixed)
+  centers so that any site is within distance $r$ of some (possibly more than
+  one) center, where $r$ is as small as possible.
+
+  \Definition{Covering Radius}
+  {
+    The {\bf covering radius} of a set of center $C$ for a set of sites $S$ is
+    the smallest $r$ such that, for all sites $s$, there exists a center $c$
+    such that the distance between $s$ and $c$ is less than or equal to $r$.
+  }
+
+  Let's look at possible greedy algorithms.
+
+  Repeatedly add the center that minimizes the cover radius. If there are 2 ties
+  and 2 centers.
+
+  The greedy algorithm does not get any finite approximation ratio.
+
+  For simplicity, suppose we know the optimal radius. Say there exists a set
+  of centers $C^*$ with radius $r$. For for any site $s$, there is a center $c
+  \in C^*$ within distance $r$ of $s$.
+
+  Then everything within distance $r$ of $c$ is withing distance $2r$ of $s$. So
+  this can give us a $2r$ cover.
+
+  \begin{lstlisting}[]
+GreedyCover($S$, $r$):
+  let $S'$ = $S$           # sites yet to be covered
+  let $C$ = $\emptyset$    # centers
+
+  while $S' \ne \emptyset$:
+    chose any $s \in S'$
+
+    add $s$ to $C$
+
+    delete all sites from $S'$ within distance $2r$ of $s$
+  end
+
+  return $C$
+end
+  \end{lstlisting}
+  
+  We claim that if this algorithm returns a cover $C$ with $|C| > k$, then no
+  set of $k$ centers can have covering radius at most $r$.
+
+  {\bf Proof}.
+
+  Suppose for the sake of contradiction that there exists some $C^*$ with $|C^*|
+  = k$ and covering radius at most $r$.
+
+  Since the set of centers $C$ (output by the algorithm) satisfies $C \subseteq
+  S$, there must be a $c^* \in C^*$ within distance $r$ of any $c \in C$.
+
+  {\bf Claim}: No $c^* \in C^*$ can be within distance $r$ of two centers in
+  $C$.
+
+  Assuming the claim, each $c \in C$ has a unique $c^* \in C^*$, so $|C^*| \ge
+  |C| > k$, which is a contradiction.
+
+  To prove the claim, suppose there exists $c, c' \in C$ with \texttt{dist}($c$,
+  $c^*$) $\le r$, but by the triangle inequality 
+
+  \[
+    \texttt{dist}(c, c^*) + \texttt{dist}(c^*, c') \ge \texttt{dist}(c, c') > 2r
+  \]
+
+  which is a contradiction.
 
 \end{document}
