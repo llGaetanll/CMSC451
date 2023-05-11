@@ -26,6 +26,7 @@
 
 \newcommand{\Mod}[1]{\ (\mathrm{mod}\ #1)}
 \def\opt{\text{opt}}
+\def\dist{\text{dist}}
 
 %%% TIKZ
 \usepackage{circuitikz}
@@ -5688,13 +5689,189 @@ end
   Assuming the claim, each $c \in C$ has a unique $c^* \in C^*$, so $|C^*| \ge
   |C| > k$, which is a contradiction.
 
-  To prove the claim, suppose there exists $c, c' \in C$ with \texttt{dist}($c$,
+  To prove the claim, suppose there exists $c, c' \in C$ with \dist($c$,
   $c^*$) $\le r$, but by the triangle inequality 
 
   \[
-    \texttt{dist}(c, c^*) + \texttt{dist}(c^*, c') \ge \texttt{dist}(c, c') > 2r
+    \dist(c, c^*) + \dist(c^*, c') \ge \dist(c, c') > 2r
   \]
 
   which is a contradiction.
+
+  \sidenote {
+    The Final exam is on Wednesday, May 17, 10:30am to 12:30pm in SPP 0301.
+  }
+
+  {\bf Question}: What if the covering radius is unknown?
+
+  One approach is to use Binary Search. You can use the trivial lower bound of
+  zero, and an upper bound by running the algorithm, then search.
+
+  Instead, by choosing the centers more carefully, we can simply remove the need
+  to know the covering radius. Let's take a look at what that might look like.
+
+  \begin{lstlisting}[]
+GreedyCover($S$):
+  # if the number of allowed sites is greater
+  # than the number of centers, put a center at
+  # every site
+  if $k > |S|$:
+    return $C = S$
+
+  select any $s \in S$ and let $C = \{s\}$
+
+  while $|C| < k$:
+    # choose the next center to be the furthest away
+    select $s \in S$ that maximizes $\dist$($s, C$) = $\min_{c \in C}(s, c)$
+
+    add $s$ to $C$
+  end
+
+  return $C$
+end
+  \end{lstlisting}
+
+  \Theorem {
+    \texttt{GreedyCover($S$)} returns a set of $k$ points with covering radius
+    at most twice the optimal radius.
+  }
+  {
+    Assume for the sake of contradiction that we get a set of $k$ points with
+    radius more than $2r$, where $r$ is the optimal radius. 
+
+    \note {
+      We don't know the optimal radius! But the point is that it exists.
+      Here, we suppose it's more than twice the best radius.
+    }
+
+    Let $s$ be a site at distance more than $2r$ from all centers (this must
+    exist because of the assumption.) Suppose that the algorithm has centers
+    $C'$ and adds center $c'$.
+
+    Then $c'$ is at least distance $2r$ away from all sites in $C'$, why? Well,
+    because 
+
+    \[
+      \dist(c', C') \ge \dist(s, C') \ge \dist(s, C) > 2r
+    \]
+
+    What this shows is that the algorithm is implementing a particular way of
+    implementing the first $k$ iterations of \texttt{GreedyCover($S$, $r$)}, the
+    algorithm from earlier, but {\it that} algorithm would have $S' \ne
+    \emptyset$ after choosing $k$ centers, since $s \in S'$, so it would
+    conclude that $k$ centers {\it cannot} have radius $r$. 
+
+    This is a contradiction, so the algorithm must find a radius better than or
+    equal twice the optimal solution.
+  }
+
+  \note {
+    Often, greedy strategies can do quite well for approximation algorithms!
+    Although sometimes, this might not work.
+  }
+
+
+
+  \newpage
+  \section{Randomized Algorithms}
+
+  It's sometimes worth looking at algorithms that don't behave in a
+  deterministic way. It can be useful to make truly random choices.
+
+  Why might we want to do this? Sometimes, problems are so hard that we might
+  want the algorithm succeeds with a certain probability. We're not even talking
+  about the quality of the solution here, we mean that the algorithm could be
+  {\it wrong}! Sometimes this is acceptable, given that the probability is low.
+  Sometimes, we might even want the running time to be random.
+
+  \subsection{Probability Theory Review}
+
+  \QUESTION{} Ask if cycles necessarily dont repeat edges!!!
+
+  \Definition {}
+  {
+    A {\bf Finite Probability Space} consists of a {\bf sample space} $\Omega$,
+    a finite set. For each {\bf outcome} $i \in \Omega$, there is a probability
+    $p(i) \ge 0$ with
+
+    \[
+      \sum_{i \in \Omega} P(i) = 1
+    \]
+
+    The sum of all probabilities should be 1.
+
+    An {\bf event} is a subset $E \subseteq \Omega$ where
+
+    \[
+      P(E) = \sum_{i \in E} P(i)
+    \]
+  }
+
+  Let's look at some examples
+
+  \example {
+    For a fair coin, $\Omega = \{H, T\}$, the probability of $H$ is $P(H) = P(T)
+    = \frac{1}{2}$
+  }
+
+  \example {
+    For $n$ fair coins, $\Omega = \{H, T\}^n$, then $P(i) = \frac{1}{2^n}$, the
+    probability of $k$ heads in $n$ flips is $\frac{1}{2^n} \binom{n}{k}$.
+  }
+
+  \Definition{Conditional Probability}
+  {
+    For two events $E$ and $F$, the {\bf conditional probability} of $E$, given
+    $F$ is
+
+    \[
+      P(E | F) = \frac{P(E \cap F)}{P(F)}
+    \]
+  }
+
+
+  \Definition{Random Variable}
+  {
+    A real-valued {\bf random variable} is a function $X: \Omega \to \R$.
+  }
+
+  \example {
+    For $n$ fair coins, the number of heads is a random variable.
+  }
+
+  \Definition{Expectation}
+  {
+    The {\bf expectation} of a random variable $X$ is 
+
+    \[
+      E[X] = \sum_{i \in \Omega} P(i) X(i)
+    \]
+  }
+
+  \example {
+    The expected number of heads for $n$ fair coins should be $n / 2$, but let's
+    see if we get that from the definition of expected value.
+
+    Let $\Omega = \{H, T\}^n$, then
+
+    \begin{align*}
+      E(H) =&\sum_{i \in \Omega} \frac{1}{2^n} \cdot (\text{number of heads in $i$}) \\
+           =&\sum_{k = 0}^n \frac{1}{2^n} \binom{n}{k} k \\
+           =&\frac{1}{2}
+    \end{align*}
+  }
+
+  \subsubsection{Linearity of Expectation}
+
+  What's amazing about expectation is that it's {\bf linear}, even if the
+  variables are strongly correlated!
+
+  \[
+    E[\alpha X + \beta Y] = \alpha E[X] + \beta E[Y]
+  \]
+
+  Here, there is no restrictions on $X$ and $Y$.
+
+  % \subsection{Global Minimum Cut}
 
 \end{document}
