@@ -27,6 +27,7 @@
 \newcommand{\Mod}[1]{\ (\mathrm{mod}\ #1)}
 \def\opt{\text{opt}}
 \def\dist{\text{dist}}
+\def\eps{\varepsilon}
 
 %%% TIKZ
 \usepackage{circuitikz}
@@ -60,7 +61,6 @@
 }
 
 \begin{document}
-
   \begin{center}
     {\bf CMSC451 - Algorithms}
   \end{center}
@@ -133,7 +133,7 @@
   \note {
     If $f(n) \in o(n)$, then $f(n) \in O(n)$
   }
-  
+
 
 
   \subsection{Big $\Omega$ Notation}
@@ -479,7 +479,7 @@
   \subsection{Edge Bounds}
 
   Let's look at various types of graphs and how many edges they can have.
-  
+
   \begin{multicols}{2}
     \subsubsection{Undirected Graphs}
 
@@ -700,7 +700,7 @@ not in $T$.
 
   \Lemma {
     If vertices $u$ and $v$ are {\it mutually reachable}, and $v$ and $w$ are
-    mutually reachable, then $u, w$ are mutually reachable. 
+    mutually reachable, then $u, w$ are mutually reachable.
 
     \btw {In other words, reachability is transitive.}
   }
@@ -778,12 +778,12 @@ end
   % \TODO Draw graph from class Tue Feb 14 2023
   %
   % \begin{center}
-  % \begin{tikzpicture}[node distance={15mm}, thick, main/.style = {draw, circle}] 
+  % \begin{tikzpicture}[node distance={15mm}, thick, main/.style = {draw, circle}]
   %     \node[main] (1) {$x_1$};
   %     \node[main] (2) [right of=1] {$x_2$};
-  %     \node[main] (5) [below right of=2] {$x_5$}; 
+  %     \node[main] (5) [below right of=2] {$x_5$};
   %     \node[main] (4) [below left of=5] {$x_4$};
-  %     \node[main] (3) [left of=4] {$x_3$}; 
+  %     \node[main] (3) [left of=4] {$x_3$};
   %
   %     \draw (1) -- (2);
   %     \draw (2) -- (4);
@@ -944,7 +944,7 @@ end
   This code checks if a graph is a DAG. This is done by adding every vertex with
   out degree $0$ to a set $S$. Then for each member $v$ of $S$, it checks all
   neighboring vertices $u$ while removing edge $\{v, u\}$. If $u$ then has no
-  edges pointing to it, it is added to $S$ as well. 
+  edges pointing to it, it is added to $S$ as well.
 
   This process is repeated until termination, when $S$ becomes empty. Finally,
   $G$ is checked and if vertices remain, then we know that $G$ is not a DAG.
@@ -1008,7 +1008,7 @@ TopoSort($G$):
 
   \Definition {Greedy Algorithm} {
     A {\bf Greedy Algorithm} is an algorithm that makes a sequence of small
-    choices, each of which is locally as good as possible. 
+    choices, each of which is locally as good as possible.
   }
 
   Greedy algorithms aren't always the best. There might be overall solutions that
@@ -1050,7 +1050,7 @@ Change($v$):
     $6$. Then the algorithm would return $4, 1, 1$, even though $3, 3$ would be
     a better solution.
   }
-  
+
 
   Sometimes, the algorithm {\it is} optimal, for instance consider the same
   example as above, but make change for $5$ instead.
@@ -1092,10 +1092,10 @@ Change($v$):
       \node[main] (1) {$u$};
       \node[main] (2) [right of=1] {$v$};
 
-      \node[main] (3) [right of=2] {$u$}; 
+      \node[main] (3) [right of=2] {$u$};
       \node[main] (4) [right of=3] {};
       \node[main] (5) [right of=4] {};
-      \node[main] (6) [right of=5] {$v$}; 
+      \node[main] (6) [right of=5] {$v$};
 
       \draw (1) -- (2) node[midway, above] {$w_{uv} = 3$};
 
@@ -1201,9 +1201,9 @@ Dijkstra($G$, $s$):
   %     \node[main] (2) [right of=1] {$u$};
   %     % \node[main] (2) [right of=1] {$v$};
   %     %
-  %     % \node[main] (3) [right of=2] {$u$}; 
+  %     % \node[main] (3) [right of=2] {$u$};
   %     % \node[main] (4) [right of=3] {};
-  %     % \node[main] (5) [right of=4] {$v$}; 
+  %     % \node[main] (5) [right of=4] {$v$};
   %     %
   %     % \draw (1) -- (2);
   %     % \draw (3) -- (4);
@@ -1235,12 +1235,12 @@ Dijkstra($G$, $s$):
   {\bf Example}
 
   \begin{center}
-    \begin{tikzpicture}[node distance={15mm}, thick, main/.style = {draw, circle}] 
+    \begin{tikzpicture}[node distance={15mm}, thick, main/.style = {draw, circle}]
       \node[main] (1) {};
       \node[main] (2) [right of=1] {};
-      \node[main] (5) [below right of=2] {}; 
+      \node[main] (5) [below right of=2] {};
       \node[main] (4) [below left of=5] {};
-      \node[main] (3) [left of=4] {}; 
+      \node[main] (3) [left of=4] {};
 
       \draw[red, very thick] (1) -- node[above] {3} (2) ;
       \draw[red, very thick] (2) -- node[left] {1} (4);
@@ -1430,7 +1430,7 @@ Dijkstra($G$, $s$):
     Divide and conquer might be the last topic before the midterm.
   }
 
-  We'll look at 3 different examples of scheduling algorithms. 
+  We'll look at 3 different examples of scheduling algorithms.
 
   \subsubsection{Interval Scheduling}
 
@@ -1491,7 +1491,7 @@ Dijkstra($G$, $s$):
   What if we consider each interval on its own, and then find the earliest
   finishing one? This is optimal! (among potentially many other solutions).
 
-  Find the earliest activity first, 
+  Find the earliest activity first,
 
   {\bf Pseudocode}
 
@@ -1596,7 +1596,7 @@ end
   % Let's call this lower bound the depth.
 
   \Definition {Interval Depth} {
-    The {\bf depth} of a set of intervals is the maximum 
+    The {\bf depth} of a set of intervals is the maximum
 
     \[
       \text{max}_t \Big\{i \in \{ 1, \dots, n\} : t \in [s_i, f_i] \Big\}
@@ -1616,7 +1616,7 @@ end
   {\bf Greedy Approach}
 
   Scan through intervals in increasing order of start time. Assign each to any
-  available resource from 
+  available resource from
 
   \[
     \{1, \dots, \text{depth}\}
@@ -1835,7 +1835,7 @@ end
   \end{itemize}
 
   \subsubsection{Running Time}
-  
+
   Let $T(n)$ be the running time on instances of length $n$. Let's write a
   recurrence equation for Merge Sort.
 
@@ -1949,7 +1949,7 @@ end
 
   {\bf Main Idea}: We could recursively subdivide the points into left and right
   based on the {\it median} $x$ coordinate of the points, and divide left and
-  right. Then we solve the closest pair problem on each half. 
+  right. Then we solve the closest pair problem on each half.
 
   \note {
   The closest pair of points {\it could} be across the line, our algorithm needs
@@ -1964,7 +1964,7 @@ end
   Let's define some notation.
 
   Suppose that the input points $P = \{p_1, \dots, p_n\}$ where $p_i = (x_i,
-  y_i)$. 
+  y_i)$.
   \begin{itemize}
     \item Let $Q$ be the points in $P$ with the first $\lceil n / 2 \rceil$ $x$
       coordinates, and let $R$ be the points in $P$ with the last $\lfloor n / 2
@@ -1989,7 +1989,7 @@ end
 
   \btw {
     So what we're doing here is that we look at every point in $Q$ and $R$, and
-    find the closest two and we define $\delta$ based on this distance. 
+    find the closest two and we define $\delta$ based on this distance.
 
     But what if the closest two points are actually between $Q$ and $R$? Let's
     explore this possibility in the next lemma.
@@ -2075,7 +2075,7 @@ end
   We've been talking about Divide and Conquer algorithms, we looked at the
   closest points problem and we started talking about polynomial multiplication,
   which will motivate the Fast Fourier Transform.
-  
+
   Recall polynomial multiplication, we can suppose that the coefficients are in
   $\R$, or even $\C$ if we wanted to.
 
@@ -2158,9 +2158,9 @@ end
 
   \begin{enumerate}
     \item {\it Evaluate $a$, $b$ on $2n - 1$ points}
-       
+
       First we compute $\O(n)$ points on $a$ and $b$, each of which takes $O(n)$ time to
-      evaluate individually, since both polynomials have $\O(n)$ terms. 
+      evaluate individually, since both polynomials have $\O(n)$ terms.
 
       Consider evaluating a polynomial of degree $d - 1$ at $d$ points $x_0,
       x_1, \dots, x_{d - 1}$
@@ -2293,7 +2293,7 @@ end
       This is the discrete Fourier transform! As it turns out, $F$ is a unitary
       matrix, meaning that its inverse is easy to compute.
 
-      We have (x = a omega vector). We want (y = ai vector). 
+      We have (x = a omega vector). We want (y = ai vector).
 
       We have that
 
@@ -2403,7 +2403,7 @@ end
 
       Where $p(j) = \max\{i < j : \text{intervals $i$ and $j$ are disjoint}\}$
   \end{itemize}
-  
+
   Let $\opt(j)$ be the optimal value for this scheduling problem on interval
   $\{1, \dots, j\}$. Well now we can write a recurrence for $\opt(j)$
 
@@ -2479,7 +2479,7 @@ end
   Let's look at the Dynamic Programming approach now.
 
   \subsubsection{Recursive Dynamic Programming Algorithm}
-  
+
   We collect all the solutions of the sub-problems, and if we've already computed
   sub-problems, we never have to compute it again.
 
@@ -2885,7 +2885,7 @@ end
       \[
         \opt(i, j) = \alpha_{x_i, y_j} + \opt(i - 1, j - 1)
       \]
-      
+
     \item {\bf No}: Is $x_i$ unmatched?
       \begin{itemize}
         \item {\bf Yes}: Then
@@ -2986,7 +2986,7 @@ end
   $t$.
 
   \begin{center}
-    \begin{tikzpicture}[node distance={15mm}, thick, main/.style = {draw, circle}] 
+    \begin{tikzpicture}[node distance={15mm}, thick, main/.style = {draw, circle}]
       \node[main] (1) {$s$};
 
       \node[main] (2) [above right of=1] {$e_1$};
@@ -3014,7 +3014,7 @@ end
   every edge.
 
   \begin{center}
-    \begin{tikzpicture}[node distance={15mm}, thick, main/.style = {draw, circle}] 
+    \begin{tikzpicture}[node distance={15mm}, thick, main/.style = {draw, circle}]
       \node[main] (1) {$s$};
 
       \node[main] (2) [above right of=1] {$e_1$};
@@ -3079,10 +3079,10 @@ end
     would need to explore more of the graph to be able to find it.
 
     \begin{center}
-      \begin{tikzpicture}[node distance={15mm}, thick, main/.style = {draw, circle}] 
+      \begin{tikzpicture}[node distance={15mm}, thick, main/.style = {draw, circle}]
         \node[main] (1) {$u$};
         \node[main] (2) [below left of=1, red] {$s$};
-        \node[main] (3) [below right of=1] {$t$}; 
+        \node[main] (3) [below right of=1] {$t$};
         \node[main] (4) [below left of=3, red] {$v$};
 
         \draw (1) [blue] -- node[above left] {2} (2) ;
@@ -3152,8 +3152,8 @@ BellmanFord($G$, $c$, $s$, $t$):
   let $M$ be an $n \times n$ array
 
   for all $v \ne t$:
-    $M[0, t] = 0$ 
-    $M[0, v] = \infty$ 
+    $M[0, t] = 0$
+    $M[0, v] = \infty$
   end
 
   for $i = 1$ to $n - 1$:
@@ -3318,7 +3318,7 @@ end
 
   \example {
     \begin{center}
-      \begin{tikzpicture} 
+      \begin{tikzpicture}
         \node[main] (v) {$v$};
         \node[main, source] (s) [below left of=v] {$s$};
         \node[main, sink] (t) [below right of=v] {$t$};
@@ -3463,7 +3463,7 @@ end
     \item Find an $s \to t$ path (using your favorite path finding algorithm)
     \item Send as much flow along it as possible.
   \end{enumerate}
-  
+
   Consider the following flow generated by the greedy rule.
 
   \begin{center}
@@ -3546,7 +3546,7 @@ end
       \item {\bf Forward Edges}: For each edge $e$ with $f(e) < C_e$, include
         the edge $e$ with capacity $C_e - f(e)$.
 
-        In this case, we're not using $e$ to its full capacity. 
+        In this case, we're not using $e$ to its full capacity.
 
       \item {\bf Backward Edges}: For each edge $e = (u, v)$ with positive flow
         value $f(e) > 0$, include the edge $(v, u)$ with capacity $f(e)$.
@@ -3560,7 +3560,7 @@ end
     A Residual Flow Network is {\bf only} defined for a {\it particular flow!}
   }
 
-  We want to send as much flow from the start to the destination. 
+  We want to send as much flow from the start to the destination.
 
   The residual flow network ``flows backwards through the graph".
 
@@ -3778,7 +3778,7 @@ end
         Whenever we add flow into an internal vertex (not the source or the
         sink), then we add the same flow going out.
       }
-    
+
   \end{enumerate}
 
   Now we're ready to see the complete algorithm.
@@ -4064,7 +4064,7 @@ end
   upper bounds, the minimum such upper bound will be {\it equal} to the maximum
   flow that we can push!
 
-  
+
 
   \NamedTheorem {\subsection{Max-Flow Min Cut Theorem}}
   {
@@ -4131,7 +4131,7 @@ end
   Recall that a bipartite graph has a bipartition of the vertices such that all
   edges have one end in $A$ and the other in $B$.
 
-  What we mean by a matching here is 
+  What we mean by a matching here is
   \Definition {}
   {
     A {\bf matching} in $G$ is an edge subset $M \subseteq E$ such that each
@@ -4169,7 +4169,7 @@ end
       % \draw [->] (s) -- (2);
       % \draw [->] (s) -- (3);
       % \draw [->] (s) -- (4);
-      % 
+      %
       % \draw [<-] (t) -- (5);
       % \draw [<-] (t) -- (6);
       % \draw [<-] (t) -- (7);
@@ -4206,7 +4206,7 @@ end
       % \draw [->] (s) -- (2);
       % \draw [->] (s) -- (3);
       % \draw [->] (s) -- (4);
-      % 
+      %
       % \draw [<-] (t) -- (5);
       % \draw [<-] (t) -- (6);
       % \draw [<-] (t) -- (7);
@@ -4610,14 +4610,14 @@ end
   \]
 
   This should make sense: the demand constraint say that the total amount of
-  stuff going in must be the total amount of stuff going out. 
+  stuff going in must be the total amount of stuff going out.
 
   However, if the sum {\it is} zero, that doesn't necessarily mean that the
   demands are feasible. In other words, the condition is not sufficient.
 
   {\bf Goal}: We want to find a reduction to a standard max flow problem.
 
-  We want to construct a graph $G'$, here's how. 
+  We want to construct a graph $G'$, here's how.
 
   \begin{enumerate}
     \item We add a source $s^*$ and a sink $t^*$ to $G'$.
@@ -4629,7 +4629,7 @@ end
       these are the vertices that {\it output more} than they take in), we add
       an edge $(s^*, v)$ of capacity $-d_v$.
 
-      In other words, $s^*$ is going to provide the necessary 
+      In other words, $s^*$ is going to provide the necessary
       flow that $v$ demands.
 
       It's important to notice that $-d_v$ is positive here, because $d_v$ is
@@ -5016,7 +5016,7 @@ end
       \TODO{} add triangle picture, Apr. 20 15:13
     }
 
-    {\bf Claim}: The formula is satisfiable {\bf if and only if} this graph 
+    {\bf Claim}: The formula is satisfiable {\bf if and only if} this graph
     has an independent set of size $m$ for $m$ clauses.
 
     {\bf Proof}: If the formula is satisfiable for every clause, there must be
@@ -5025,7 +5025,7 @@ end
     variable as the vertex that we'll keep in the independent set problem.
 
     This gives a set of vertices of size equal to the number of triangles. It's
-    independent because 
+    independent because
 
     \begin{itemize}
       \item We only take one vertex per triangle
@@ -5543,7 +5543,7 @@ end
     \min(\max_j (\text{load}(j)))
   \]
 
-  We are going to do this by defining what jobs go in $A_j$. 
+  We are going to do this by defining what jobs go in $A_j$.
 
   This problem is NP-Hard, try to show it.
 
@@ -5671,7 +5671,7 @@ GreedyCover($S$, $r$):
   return $C$
 end
   \end{lstlisting}
-  
+
   We claim that if this algorithm returns a cover $C$ with $|C| > k$, then no
   set of $k$ centers can have covering radius at most $r$.
 
@@ -5690,7 +5690,7 @@ end
   |C| > k$, which is a contradiction.
 
   To prove the claim, suppose there exists $c, c' \in C$ with \dist($c$,
-  $c^*$) $\le r$, but by the triangle inequality 
+  $c^*$) $\le r$, but by the triangle inequality
 
   \[
     \dist(c, c^*) + \dist(c^*, c') \ge \dist(c, c') > 2r
@@ -5737,7 +5737,7 @@ end
   }
   {
     Assume for the sake of contradiction that we get a set of $k$ points with
-    radius more than $2r$, where $r$ is the optimal radius. 
+    radius more than $2r$, where $r$ is the optimal radius.
 
     \note {
       We don't know the optimal radius! But the point is that it exists.
@@ -5749,7 +5749,7 @@ end
     $C'$ and adds center $c'$.
 
     Then $c'$ is at least distance $2r$ away from all sites in $C'$, why? Well,
-    because 
+    because
 
     \[
       \dist(c', C') \ge \dist(s, C') \ge \dist(s, C) > 2r
@@ -5759,7 +5759,7 @@ end
     implementing the first $k$ iterations of \texttt{GreedyCover($S$, $r$)}, the
     algorithm from earlier, but {\it that} algorithm would have $S' \ne
     \emptyset$ after choosing $k$ centers, since $s \in S'$, so it would
-    conclude that $k$ centers {\it cannot} have radius $r$. 
+    conclude that $k$ centers {\it cannot} have radius $r$.
 
     This is a contradiction, so the algorithm must find a radius better than or
     equal twice the optimal solution.
@@ -5786,8 +5786,6 @@ end
 
   \subsection{Probability Theory Review}
 
-  \QUESTION{} Ask if cycles necessarily dont repeat edges!!!
-
   \Definition {}
   {
     A {\bf Finite Probability Space} consists of a {\bf sample space} $\Omega$,
@@ -5799,6 +5797,8 @@ end
     \]
 
     The sum of all probabilities should be 1.
+
+    \TODO{} change notation of $E$ for event.
 
     An {\bf event} is a subset $E \subseteq \Omega$ where
 
@@ -5841,7 +5841,7 @@ end
 
   \Definition{Expectation}
   {
-    The {\bf expectation} of a random variable $X$ is 
+    The {\bf expectation} of a random variable $X$ is
 
     \[
       E[X] = \sum_{i \in \Omega} P(i) X(i)
@@ -5872,6 +5872,176 @@ end
 
   Here, there is no restrictions on $X$ and $Y$.
 
-  % \subsection{Global Minimum Cut}
+  \subsection{Global Minimum Cut}
+
+  Let's review what a cut is.
+
+  \Definition{Cut}
+  {
+    A {\bf cut} in an undirected graph $G = (V, E)$ is a bipartition of the
+    vertices $V = A \cap B$ with $A \cup B = \emptyset$.
+  }
+
+  We previously discussed $s$-$t$ cuts in flow networks. What if we don't
+  specify $s$ and $t$?
+
+  Well then it can be trivial: put everything in $A$, and nothing in $B$! This
+  isn't super interesting though. Let's say we really want to {\it disconnect}
+  the graph. We only required that both parts of the cut $A$ and $B$ are
+  non-empty.
+
+  \Definition {Global Minimum Cut}
+  {
+    The {\bf Global Minimum Cut} is a non-trivial cut that has the smallest
+    number of edges between $A$ and $B$, that measures the ``robustness" of the
+    graph.
+  }
+
+  We can use Network Flow to solve this problem! Let's fix some vertex $s$, in
+  every cut, $s$ must be on some side. Since we don't know a $t$ that must be
+  in the other part of the global minimum cut, what we can do is just run over
+  all other vertices $t \ne s$. Then, we use \texttt{Ford-Fulkerson} to find the
+  minimum $s$-$t$ cut. The smallest of these is the global minimum.
+
+  This uses \texttt{Ford-Fulkerson} $n - 1$ times. \texttt{Ford-Fulkerson} had
+  cost $\O(C (m + n))$, where $C$ was the number of edges leaving $s$. This $C$
+  could be as big as $n$, $m$ could be as big as $n^2$, so we get an overall
+  time complexity of $\O(n(n^2 + n)) = \O(n^3)$ for \texttt{Ford-Fulkerson}
+  which we run $n - 1$ times, so our total running time is $\O(n^4)$.
+
+  Let's look at an alternative.
+
+  \subsubsection{Karger's Contraction Algorithm}
+
+  \begin{enumerate}
+    \item First, choose an edge arbitrarily.
+    \item {\bf Contract} that edge. When we do this, we're going to produce a
+      {\it multi-graph}. i.e., we're going to allows multiple edges.
+    \item Repeat this until only 2 vertices remain.
+    \item Return the cut defined by the set of original vertices that lead to
+      the two final vertices.
+  \end{enumerate}
+
+  \example {
+    Let's look at what we mean by {\it contracting} an edge.
+
+    Take a look at this graph.
+
+    \TODO{}
+
+    If we wanted to contract the $2$-$4$ edge, this is what our resulting graph
+    would look like.
+
+    \TODO{}
+
+    If we wanted to now contract either edge between $2, 4$-$5$, our resulting
+    graph would look like this
+
+    \TODO{}
+
+    So the number of edges can decrease by {\it more than one} each time!
+  }
+
+  \note {
+    If we produce multiple edges between two vertices, those edges are going to
+    be more likely to be get contracted!
+  }
+
+  Why on earth would this process produce the minimum cut? The intuition is
+  that, because the minimal cut is minimal, it doesn't have a lot of edges! The
+  idea is that the probability that we would end up contracting one of the edges
+  in the minimal cut is pretty small.
+
+  Let's look at this more formally.
+
+  \Lemma {
+    The contraction algorithm returns a global minimum cut with probability at
+    least $\frac{1}{\binom{n}{2}}$.
+
+    This isn't great, but it's a bound! The idea here is that you don't need to
+    run this process only once. If you run this multiple times, you're actually going
+    to be pretty likely to have found the true minimal cut.
+  }
+  {
+    Suppose that the minimal cut size is $k$. Then, every vertex $v$ has degree
+    at least $k$. If this was not the case, $A = \{v\}, B = V \setminus \{v\}$ would be a
+    smaller cut.
+
+    Thus, $|E| \ge \frac{1}{2} kn$. Why? Well, we know that the number of edges is exactly
+
+    \[
+      |E| = \frac{1}{2} \sum_{v \in V} \deg(v)
+    \]
+
+    So the probability that a uniformly random edge belongs to the minimum cut
+    is at most
+
+    \[
+      \frac{k}{(1 / 2) kn} = \frac{2}{n}
+    \]
+
+    The idea here is that whatever $k$ is, it's not that likely to be in the
+    minimal cut!
+
+    Similarly, after $j$ iterations, we have $n - j$ vertices (since we remove
+    one vertex per contraction.)
+
+    Assuming that we haven't yet contracted a minimum cut edge, the graph that
+    we're working on {\it still} has a minimum cut of size at least $k$.
+
+    Because of that, it still has {\it at least} $\frac{1}{2} k (n - j)$ edges.
+
+    What we can gather from this is the following. A random edge belongs to the
+    minimum cut with probability at most
+
+    \[
+      \frac{k}{(1 / 2) k (n - j)} = \frac{2}{n - j}
+    \]
+
+    Let $E_j$ be the even that an edge of the minimum cut is {\it not}
+    contracted on the $j$th step. We're going to bound the probability that the
+    algorithm is successful.
+
+    \begin{align}
+      P(\text{success}) =&P(E_1) P(E_2 | E_1) P(E_3 | (E_1 \wedge E_2)) \cdots P(E_{n - 2} | (E_1 \wedge \cdots \wedge E_{n - 3})) \\
+      \ge& \left(1 - \frac{2}{n}\right)\left(1 - \frac{2}{n - 1}\right)\left(1 -
+      \frac{2}{n - 2}\right) \cdots \left(1 - \frac{2}{3}\right) \notag\\
+      =&\frac{n - 2}{n} \cdot \frac{n - 3}{n - 1} \cdot \frac{n - 4}{n - 2}
+      \cdots \frac{2}{4} \cdot \frac{1}{3} \notag\\
+      =&\frac{2}{n(n - 1)} = \frac{1}{\binom{n}{2}} \notag
+    \end{align}
+
+    Notice that in step $(1)$, we stop at $E_{n - 2}$ because we want to be left
+    with 2 vertices at the end of this process, and each contraction removes
+    exactly one vertex.
+  }
+
+  The success probability is small, but we can do better by repeating this many
+  times and outputting the smallest cut we find.
+
+  How much better? Well, suppose that the success probability is one run is
+  $\eps$. What's the probability that we fail {\it every time}? Say $k$ times.
+  Well, its $(1 - \eps)^k$. But we have that
+
+  \[
+    (1 - \eps)^k \le e^{-\eps k}
+  \]
+
+  Since $1 - \eps \le e^{-\eps}$. If you don't fully follow why this is true,
+  just trust me that it is.
+
+  We want failure probability at most, say, $\delta$. So if take $k =
+  \frac{1}{\eps} \ln(\delta)$, this is enough.
+
+  So we can find a minimum cut with probability arbitrarily close to $1$ with
+  $\O(n^2)$ repetitions. Each iteration takes time $\O(m)$, so overall, the
+  algorithm has cost $\O(m \cdot n^2)$. With some more work, this algorithm can
+  actually be improved to $\O(n^2)$.
+
+  The main lesson of this algorithm is that, its a completely different process
+  of writing algorithms! Here, we perform random processes instead of
+  deterministic ones. As long as you're willing to accept a certain probability
+  of failure, you can build some pretty interesting and fast algorithms using
+  randomness.
 
 \end{document}
